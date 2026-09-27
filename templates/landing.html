@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SmartSpace AI | Interior Design</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="interior-home">
+
+    <!-- =====================================================
+         NAVIGATION
+    ====================================================== -->
+
+    <nav class="interior-menu">
+
+        <a href="/" class="menu-active">Home</a>
+
+        <a href="#styles">Styles</a>
+
+        <a href="#what-if">AI Planner</a>
+
+        <a href="#day-night">Lighting</a>
+
+        <a href="#how-it-works">How It Works</a>
+
+        <a href="#about">About</a>
+
+    </nav>
+
+
+    <!-- =====================================================
+         HERO SECTION
+    ====================================================== -->
+
+    <section class="interior-hero">
+
+        <div class="hero-left">
+
+            <div class="hero-small-label">
+                ✦ AI-POWERED INTERIOR DESIGN
+            </div>
+
+            <h1>
+                Design a space
+                <br>
+                <em>you'll love</em>
+                to live in.
+            </h1>
+
+            <p class="hero-description">
+                Create beautiful, personalized interiors
+                with intelligent recommendations tailored
+                to your room, style and budget.
+            </p>
+
+            <div class="hero-buttons">
+
+                <a href="/create-project"
+                   class="design-button">
+                    Start Your Design
+                    <span>→</span>
+                </a>
+
+                <a href="#styles"
+                   class="explore-button">
+                    Explore Styles
+                </a>
+
+            </div>
+
+            <div class="hero-features">
+
+                <div>
+                    <strong>01</strong>
+                    <span>
+                        Personalized
+                        Designs
+                    </span>
+                </div>
+
+                <div>
+                    <strong>02</strong>
+                    <span>
+                        Smart Furniture
+                        Placement
+                    </span>
+                </div>
+
+                <div>
+                    <strong>03</strong>
+                    <span>
+                        Budget
+                        Optimization
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- HERO ROOM -->
+
+        <div class="hero-room-area">
+
+            <div class="room-glow"></div>
+
+            <div class="interior-room">
+
+                <!-- Window -->
+
+                <div class="room-window">
+                    <div class="window-light"></div>
+                </div>
+
+
+                <!-- Wall Art -->
+
+                <div class="wall-art">
+                    <div></div>
+                    <div></div>
+                </div>
+
+
+                <!-- Sofa -->
+
+                <div class="design-sofa">
+                    <div class="sofa-back"></div>
+                    <div class="sofa-seat"></div>
+                    <div class="sofa-cushion cushion-one"></div>
+                    <div class="sofa-cushion cushion-two"></div>
+                </div>
+
+
+                <!-- Coffee Table -->
+
+                <div class="coffee-table">
+                    <div class="table-top"></div>
+                    <div class="table-leg left-leg"></div>
+                    <div class="table-leg right-leg"></div>
+                </div>
+
+
+                <!-- Plant -->
+
+                <div class="design-plant">
+
+                    <div class="plant-leaves">
+                        🌿
+                    </div>
+
+                    <div class="plant-pot"></div>
+
+                </div>
+
+
+                <!-- Floor Lamp -->
+
+                <div class="floor-lamp">
+
+                    <div class="lamp-shade"></div>
+                    <div class="lamp-stand"></div>
+                    <div class="lamp-base"></div>
+
+                </div>
+
+
+                <!-- Rug -->
+
+                <div class="design-rug"></div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         STYLE SECTION
+    ====================================================== -->
+
+    <section id="styles"
+             class="styles-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span>
+                    FIND YOUR STYLE
+                </span>
+
+                <h2>
+                    Spaces made
+                    <em>for you.</em>
+                </h2>
+
+            </div>
+
+            <p>
+                Choose a style and let SmartSpace
+                create a design around your
+                preferences.
+            </p>
+
+        </div>
+
+
+        <div class="style-grid">
+
+            <!-- Modern -->
+
+            <div class="style-item style-large">
+
+                <div class="style-image modern-room">
+
+                    <div class="style-sofa"></div>
+                    <div class="style-table"></div>
+
+                    <div class="style-plant">
+                        🌿
+                    </div>
+
+                </div>
+
+                <div class="style-info">
+
+                    <h3>Modern</h3>
+
+                    <span>
+                        Clean · Elegant · Functional
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- Luxury -->
+
+            <div class="style-item">
+
+                <div class="style-image luxury-room">
+
+                    <div class="luxury-sofa"></div>
+                    <div class="luxury-light"></div>
+
+                </div>
+
+                <div class="style-info">
+
+                    <h3>Luxury</h3>
+
+                    <span>
+                        Rich · Refined · Timeless
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- Minimal -->
+
+            <div class="style-item">
+
+                <div class="style-image minimal-room">
+
+                    <div class="minimal-chair"></div>
+
+                    <div class="minimal-plant">
+                        🌿
+                    </div>
+
+                </div>
+
+                <div class="style-info">
+
+                    <h3>Minimal</h3>
+
+                    <span>
+                        Calm · Simple · Natural
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- Scandinavian -->
+
+            <div class="style-item">
+
+                <div class="style-image scandi-room">
+
+                    <div class="scandi-sofa"></div>
+                    <div class="scandi-table"></div>
+
+                </div>
+
+                <div class="style-info">
+
+                    <h3>Scandinavian</h3>
+
+                    <span>
+                        Warm · Natural · Comfortable
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         HOW IT WORKS
+    ====================================================== -->
+
+    <section id="how-it-works"
+             class="how-section">
+
+        <div class="center-heading">
+
+            <span>
+                HOW IT WORKS
+            </span>
+
+            <h2>
+                From your room
+                <em>to your dream space.</em>
+            </h2>
+
+        </div>
+
+
+        <div class="process-grid">
+
+            <!-- STEP 1 -->
+
+            <div class="process-card">
+
+                <div class="process-number">
+                    01
+                </div>
+
+                <div class="process-icon">
+                    ↑
+                </div>
+
+                <h3>
+                    Tell us about your space
+                </h3>
+
+                <p>
+                    Upload your room image,
+                    dimensions and tell us what
+                    kind of space you want.
+                </p>
+
+            </div>
+
+
+            <!-- STEP 2 -->
+
+            <div class="process-card">
+
+                <div class="process-number">
+                    02
+                </div>
+
+                <div class="process-icon">
+                    ✦
+                </div>
+
+                <h3>
+                    AI understands your room
+                </h3>
+
+                <p>
+                    Computer vision identifies
+                    furniture and available
+                    space.
+                </p>
+
+            </div>
+
+
+            <!-- STEP 3 -->
+
+            <div class="process-card">
+
+                <div class="process-number">
+                    03
+                </div>
+
+                <div class="process-icon">
+                    ◇
+                </div>
+
+                <h3>
+                    Create your design
+                </h3>
+
+                <p>
+                    AI optimizes furniture
+                    placement according to
+                    your preferences.
+                </p>
+
+            </div>
+
+
+            <!-- STEP 4 -->
+
+            <div class="process-card">
+
+                <div class="process-number">
+                    04
+                </div>
+
+                <div class="process-icon">
+                    ✓
+                </div>
+
+                <h3>
+                    Refine and visualize
+                </h3>
+
+                <p>
+                    Explore your design,
+                    modify furniture and
+                    check the estimated cost.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         WHAT-IF AI SIMULATOR
+    ====================================================== -->
+
+    <section id="what-if"
+             class="what-if-section">
+
+        <div class="what-if-header">
+
+            <span>
+                WHAT-IF AI SIMULATOR
+            </span>
+
+            <h2>
+                Design before
+                <em>you decide.</em>
+            </h2>
+
+            <p>
+                Explore furniture changes before applying them.
+                SmartSpace predicts circulation, space utilization,
+                collision risk and budget impact.
+            </p>
+
+        </div>
+
+
+        <div class="what-if-panel">
+
+            <!-- SIMULATION ROOM -->
+
+            <div class="what-if-room">
+
+                <div class="sim-window"></div>
+
+                <div class="sim-sofa">
+                    SOFA
+                </div>
+
+                <div class="sim-table">
+                    TABLE
+                </div>
+
+                <div class="sim-plant">
+                    🌿
+                </div>
+
+                <div class="sim-path">
+                    AI WALKING PATH
+                </div>
+
+            </div>
+
+
+            <!-- RESULTS -->
+
+            <div class="simulation-results">
+
+                <span class="result-label">
+                    LIVE AI SIMULATION
+                </span>
+
+                <h3>
+                    Move the sofa
+                </h3>
+
+                <p class="simulation-description">
+                    SmartSpace evaluates the new arrangement
+                    before you apply it.
+                </p>
+
+
+                <div class="result-item">
+
+                    <span>
+                        Circulation
+                    </span>
+
+                    <strong>
+                        87 → 94
+                    </strong>
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <span>
+                        Space Utilization
+                    </span>
+
+                    <strong>
+                        76 → 81%
+                    </strong>
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <span>
+                        Collision Risk
+                    </span>
+
+                    <strong class="safe">
+                        LOW
+                    </strong>
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <span>
+                        Budget Impact
+                    </span>
+
+                    <strong>
+                        ₹0
+                    </strong>
+
+                </div>
+
+
+                <button class="simulation-button">
+                    Apply AI Recommendation →
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         DAY / NIGHT LIGHTING SIMULATOR
+    ====================================================== -->
+
+    <section id="day-night"
+             class="day-night-section">
+
+        <div class="day-night-header">
+
+            <span>
+                LIGHTING INTELLIGENCE
+            </span>
+
+            <h2>
+                See your room in
+                <em>every light.</em>
+            </h2>
+
+            <p>
+                SmartSpace simulates how your interior changes
+                throughout the day and helps you understand
+                natural and artificial lighting.
+            </p>
+
+        </div>
+
+
+        <div class="day-night-panel">
+
+            <!-- LIGHTING ROOM -->
+
+            <div class="lighting-room lighting-morning">
+
+                <div class="lighting-window"></div>
+
+                <div class="lighting-sofa">
+                    SOFA
+                </div>
+
+                <div class="lighting-table">
+                    TABLE
+                </div>
+
+                <div class="lighting-plant">
+                    🌿
+                </div>
+
+                <div class="lighting-lamp">
+                    💡
+                </div>
+
+                <div class="lighting-overlay"></div>
+
+                <div class="lighting-time">
+                    08:00 AM
+                </div>
+
+            </div>
+
+
+            <!-- LIGHTING CONTROLS -->
+
+            <div class="lighting-controls">
+
+                <span class="control-label">
+                    AI LIGHTING SIMULATION
+                </span>
+
+                <h3>
+                    Fresh morning light
+                </h3>
+
+                <p>
+                    Preview how your room looks under
+                    different lighting conditions.
+                </p>
+
+
+                <div class="time-options">
+
+                    <button class="time-option active"
+                            data-time="morning">
+
+                        <strong>☀</strong>
+
+                        <span>
+                            Morning
+                        </span>
+
+                    </button>
+
+
+                    <button class="time-option"
+                            data-time="evening">
+
+                        <strong>◐</strong>
+
+                        <span>
+                            Evening
+                        </span>
+
+                    </button>
+
+
+                    <button class="time-option"
+                            data-time="night">
+
+                        <strong>☾</strong>
+
+                        <span>
+                            Night
+                        </span>
+
+                    </button>
+
+                </div>
+
+
+                <div class="lighting-result">
+
+                    <div>
+                        <span>
+                            Natural Light
+                        </span>
+
+                        <strong>
+                            64%
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span>
+                            Artificial Light
+                        </span>
+
+                        <strong>
+                            36%
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span>
+                            Ambience
+                        </span>
+
+                        <strong>
+                            Warm
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <button class="lighting-button">
+                    Optimize Lighting →
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         AI SECTION
+    ====================================================== -->
+
+    <section id="about"
+             class="ai-section">
+
+        <div class="ai-section-content">
+
+            <span>
+                DESIGN INTELLIGENCE
+            </span>
+
+            <h2>
+                Beautiful design,
+                <br>
+                backed by <em>AI.</em>
+            </h2>
+
+            <p>
+                SmartSpace combines computer vision,
+                reinforcement learning and intelligent
+                path planning to help create practical
+                interior layouts.
+            </p>
+
+            <a href="/create-project"
+               class="design-button">
+                Create My Space →
+            </a>
+
+        </div>
+
+
+        <div class="ai-tech">
+
+            <div class="tech-box">
+
+                <strong>
+                    YOLO
+                </strong>
+
+                <span>
+                    Furniture Detection
+                </span>
+
+            </div>
+
+
+            <div class="tech-box">
+
+                <strong>
+                    DQN
+                </strong>
+
+                <span>
+                    Layout Optimization
+                </span>
+
+            </div>
+
+
+            <div class="tech-box">
+
+                <strong>
+                    A*
+                </strong>
+
+                <span>
+                    Space &amp; Path Planning
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer class="interior-footer">
+
+        <div class="footer-logo">
+
+            <div class="logo-box">
+                S
+            </div>
+
+            <strong>
+                SmartSpace AI
+            </strong>
+
+        </div>
+
+        <p>
+            Intelligent interior design,
+            personalized for you.
+        </p>
+
+        <span>
+            © 2026 SmartSpace AI
+        </span>
+
+    </footer>
+
+
+    <!-- =====================================================
+         LIGHTING JAVASCRIPT
+    ====================================================== -->
+
+    <script src="{{ url_for('static', filename='js/lighting.js') }}"></script>
+
+</body>
+
+</html>

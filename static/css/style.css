@@ -1,0 +1,2671 @@
+/* =========================================================
+   SMARTSPACE AI
+   CLEAN LANDING PAGE STYLESHEET
+========================================================= */
+
+/* =========================================================
+   GLOBAL
+========================================================= */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.interior-home {
+    width: 100%;
+    min-height: 100vh;
+    background: #f5f1eb;
+    color: #24231f;
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+button,
+a {
+    font-family: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+.interior-menu {
+    width: 100%;
+    min-height: 78px;
+    padding: 0 7%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 34px;
+
+    background: #f8f5f0;
+    border-bottom: 1px solid #ddd7cd;
+
+    position: relative;
+    z-index: 100;
+}
+
+.interior-menu a {
+    position: relative;
+
+    color: #625e55;
+    text-decoration: none;
+
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+
+    transition:
+        color .25s ease,
+        transform .25s ease;
+}
+
+.interior-menu a:hover {
+    color: #24231f;
+    transform: translateY(-1px);
+}
+
+.interior-menu .menu-active {
+    color: #24231f;
+}
+
+.interior-menu .menu-active::after {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -8px;
+
+    height: 2px;
+    background: #a88763;
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.interior-hero {
+    width: 100%;
+    min-height: 700px;
+
+    padding: 80px 7% 75px;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, .9fr)
+        minmax(0, 1.1fr);
+
+    align-items: center;
+    gap: 45px;
+
+    overflow: hidden;
+}
+
+.hero-left {
+    width: 100%;
+    max-width: 620px;
+    position: relative;
+    z-index: 5;
+}
+
+.hero-small-label {
+    margin-bottom: 22px;
+
+    color: #947352;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.hero-left h1 {
+    margin: 0;
+
+    max-width: 600px;
+
+    color: #282720;
+
+    font-size: clamp(48px, 5.5vw, 78px);
+    font-weight: normal;
+    line-height: .98;
+    letter-spacing: -3px;
+}
+
+.hero-left h1 em {
+    color: #987653;
+    font-style: italic;
+}
+
+.hero-description {
+    max-width: 510px;
+
+    margin: 28px 0 0;
+
+    color: #716c62;
+
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+
+/* =========================================================
+   HERO BUTTONS
+========================================================= */
+
+.hero-buttons {
+    margin-top: 35px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.design-button,
+.explore-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 46px;
+    padding: 0 22px;
+
+    text-decoration: none;
+
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: .3px;
+
+    transition:
+        transform .25s ease,
+        background .25s ease,
+        color .25s ease;
+}
+
+.design-button {
+    gap: 14px;
+
+    background: #292721;
+    color: #fff;
+
+    border: 1px solid #292721;
+}
+
+.design-button:hover {
+    transform: translateY(-2px);
+    background: #403c34;
+}
+
+.design-button span {
+    font-size: 17px;
+}
+
+.explore-button {
+    background: transparent;
+    color: #292721;
+
+    border: 1px solid #c7beb1;
+}
+
+.explore-button:hover {
+    transform: translateY(-2px);
+    background: #e9e2d8;
+}
+
+
+/* =========================================================
+   HERO FEATURES
+========================================================= */
+
+.hero-features {
+    margin-top: 55px;
+
+    display: flex;
+    gap: 35px;
+    flex-wrap: wrap;
+}
+
+.hero-features > div {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.hero-features strong {
+    color: #a18362;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: normal;
+}
+
+.hero-features span {
+    color: #4e4a43;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   HERO ROOM
+========================================================= */
+
+.hero-room-area {
+    position: relative;
+
+    width: 100%;
+    min-width: 0;
+    height: 570px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: visible;
+}
+
+.room-glow {
+    position: absolute;
+
+    width: 430px;
+    height: 430px;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(206, 178, 142, .45),
+            rgba(206, 178, 142, 0) 70%
+        );
+
+    filter: blur(5px);
+}
+
+
+/* =========================================================
+   INTERIOR ROOM
+========================================================= */
+
+.interior-room {
+    position: relative;
+
+    width: min(100%, 650px);
+    height: 500px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #eee7dc,
+            #d9d0c2
+        );
+
+    border-radius: 4px;
+
+    box-shadow:
+        0 30px 70px rgba(58, 48, 38, .18),
+        inset 0 0 0 1px rgba(255,255,255,.35);
+
+    overflow: hidden;
+
+    transform: perspective(1000px)
+               rotateX(2deg);
+}
+
+
+/* =========================================================
+   ROOM FLOOR
+========================================================= */
+
+.interior-room::after {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 43%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #c8b9a5,
+            #aa9984
+        );
+
+    clip-path: polygon(
+        0 22%,
+        100% 0,
+        100% 100%,
+        0 100%
+    );
+
+    z-index: 1;
+}
+
+
+/* =========================================================
+   WINDOW
+========================================================= */
+
+.room-window {
+    position: absolute;
+
+    top: 55px;
+    left: 70px;
+
+    width: 175px;
+    height: 155px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #d8e3e6,
+            #91a8ad
+        );
+
+    border: 9px solid #f3eee7;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,.12);
+
+    z-index: 2;
+}
+
+.window-light {
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            120deg,
+            rgba(255,255,255,.55),
+            transparent 50%
+        );
+}
+
+
+/* =========================================================
+   WALL ART
+========================================================= */
+
+.wall-art {
+    position: absolute;
+
+    top: 55px;
+    right: 75px;
+
+    width: 115px;
+    height: 145px;
+
+    display: flex;
+    gap: 8px;
+
+    z-index: 3;
+}
+
+.wall-art div {
+    flex: 1;
+
+    border: 7px solid #e9e2d7;
+
+    background:
+        linear-gradient(
+            145deg,
+            #8b7967,
+            #c4ad90
+        );
+
+    box-shadow:
+        0 5px 12px rgba(0,0,0,.12);
+}
+
+
+/* =========================================================
+   SOFA
+========================================================= */
+
+.design-sofa {
+    position: absolute;
+
+    left: 105px;
+    bottom: 95px;
+
+    width: 300px;
+    height: 155px;
+
+    z-index: 5;
+}
+
+.sofa-back {
+    position: absolute;
+
+    left: 0;
+    bottom: 42px;
+
+    width: 300px;
+    height: 100px;
+
+    border-radius: 18px 18px 8px 8px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #766a5b,
+            #51483e
+        );
+
+    box-shadow:
+        0 12px 18px rgba(0,0,0,.2);
+}
+
+.sofa-seat {
+    position: absolute;
+
+    left: 10px;
+    bottom: 25px;
+
+    width: 280px;
+    height: 45px;
+
+    border-radius: 10px;
+
+    background: #8b7b69;
+}
+
+.sofa-cushion {
+    position: absolute;
+
+    bottom: 70px;
+
+    width: 72px;
+    height: 58px;
+
+    border-radius: 8px;
+
+    background: #a59684;
+
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.15);
+}
+
+.cushion-one {
+    left: 35px;
+}
+
+.cushion-two {
+    left: 120px;
+}
+
+
+/* =========================================================
+   COFFEE TABLE
+========================================================= */
+
+.coffee-table {
+    position: absolute;
+
+    right: 75px;
+    bottom: 105px;
+
+    width: 135px;
+    height: 105px;
+
+    z-index: 7;
+}
+
+.table-top {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 135px;
+    height: 35px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8e765b,
+            #624e3d
+        );
+
+    box-shadow:
+        0 7px 12px rgba(0,0,0,.18);
+}
+
+.table-leg {
+    position: absolute;
+
+    top: 25px;
+
+    width: 8px;
+    height: 75px;
+
+    background: #57483a;
+}
+
+.left-leg {
+    left: 30px;
+}
+
+.right-leg {
+    right: 30px;
+}
+
+
+/* =========================================================
+   PLANT
+========================================================= */
+
+.design-plant {
+    position: absolute;
+
+    right: 32px;
+    bottom: 95px;
+
+    z-index: 8;
+}
+
+.plant-leaves {
+    position: relative;
+
+    font-size: 52px;
+    line-height: 1;
+}
+
+.plant-pot {
+    width: 45px;
+    height: 42px;
+
+    margin: -5px auto 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            #997c62,
+            #705a48
+        );
+
+    border-radius: 5px 5px 12px 12px;
+}
+
+
+/* =========================================================
+   FLOOR LAMP
+========================================================= */
+
+.floor-lamp {
+    position: absolute;
+
+    right: 175px;
+    bottom: 75px;
+
+    width: 60px;
+    height: 220px;
+
+    z-index: 6;
+}
+
+.lamp-shade {
+    position: absolute;
+
+    top: 0;
+    left: 3px;
+
+    width: 55px;
+    height: 50px;
+
+    background: #d1b99b;
+
+    clip-path: polygon(
+        12% 0,
+        88% 0,
+        100% 100%,
+        0 100%
+    );
+}
+
+.lamp-stand {
+    position: absolute;
+
+    top: 45px;
+    left: 29px;
+
+    width: 4px;
+    height: 145px;
+
+    background: #655544;
+}
+
+.lamp-base {
+    position: absolute;
+
+    bottom: 0;
+    left: 8px;
+
+    width: 48px;
+    height: 10px;
+
+    border-radius: 50%;
+
+    background: #544536;
+}
+
+
+/* =========================================================
+   RUG
+========================================================= */
+
+.design-rug {
+    position: absolute;
+
+    left: 100px;
+    bottom: 40px;
+
+    width: 410px;
+    height: 150px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            ellipse,
+            #d2c0aa,
+            #b5a28d
+        );
+
+    opacity: .85;
+
+    z-index: 2;
+}
+
+
+/* =========================================================
+   STYLE SECTION
+========================================================= */
+
+.styles-section {
+    width: 100%;
+
+    padding: 95px 7% 100px;
+
+    background: #eee9e1;
+
+    overflow: hidden;
+}
+
+.section-heading {
+    max-width: 1200px;
+
+    margin: 0 auto 45px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 40px;
+}
+
+.section-heading span,
+.center-heading span,
+.what-if-header > span,
+.day-night-header > span,
+.ai-section-content > span {
+    color: #a18362;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.section-heading h2,
+.center-heading h2,
+.what-if-header h2,
+.day-night-header h2 {
+    margin: 14px 0 0;
+
+    color: #292721;
+
+    font-size: clamp(38px, 4vw, 55px);
+    font-weight: normal;
+    line-height: 1.05;
+}
+
+.section-heading h2 em,
+.center-heading h2 em,
+.what-if-header h2 em,
+.day-night-header h2 em {
+    color: #a07d5a;
+    font-style: italic;
+}
+
+.section-heading p {
+    max-width: 360px;
+
+    margin: 0;
+
+    color: #746e65;
+
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+
+/* =========================================================
+   STYLE GRID
+========================================================= */
+
+.style-grid {
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+    display: grid;
+
+    grid-template-columns:
+        1.4fr
+        1fr
+        1fr;
+
+    grid-template-rows:
+        320px
+        320px;
+
+    gap: 18px;
+}
+
+.style-item {
+    min-width: 0;
+
+    background: #f7f3ed;
+
+    overflow: hidden;
+
+    border: 1px solid #ded6cb;
+}
+
+.style-large {
+    grid-row: span 2;
+}
+
+.style-image {
+    position: relative;
+
+    width: 100%;
+    height: calc(100% - 70px);
+
+    overflow: hidden;
+}
+
+.style-info {
+    height: 70px;
+
+    padding: 15px 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.style-info h3 {
+    margin: 0 0 5px;
+
+    color: #2c2924;
+
+    font-size: 20px;
+    font-weight: normal;
+}
+
+.style-info span {
+    color: #81796e;
+
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   STYLE IMAGE BACKGROUNDS
+========================================================= */
+
+.modern-room {
+    background:
+        linear-gradient(
+            135deg,
+            #ddd7cd,
+            #b9aea0
+        );
+}
+
+.luxury-room {
+    background:
+        linear-gradient(
+            135deg,
+            #55483e,
+            #2f2925
+        );
+}
+
+.minimal-room {
+    background:
+        linear-gradient(
+            135deg,
+            #eeeae3,
+            #cbc2b6
+        );
+}
+
+.scandi-room {
+    background:
+        linear-gradient(
+            135deg,
+            #e7ddd0,
+            #b9a58d
+        );
+}
+
+
+/* =========================================================
+   STYLE DECOR
+========================================================= */
+
+.style-sofa {
+    position: absolute;
+
+    left: 20%;
+    bottom: 22%;
+
+    width: 52%;
+    height: 25%;
+
+    border-radius: 15px;
+
+    background: #6f655a;
+}
+
+.style-table {
+    position: absolute;
+
+    right: 15%;
+    bottom: 18%;
+
+    width: 22%;
+    height: 10%;
+
+    border-radius: 50%;
+
+    background: #806a54;
+}
+
+.style-plant {
+    position: absolute;
+
+    right: 7%;
+    bottom: 20%;
+
+    font-size: 45px;
+}
+
+.luxury-sofa {
+    position: absolute;
+
+    left: 15%;
+    bottom: 22%;
+
+    width: 65%;
+    height: 27%;
+
+    border-radius: 18px;
+
+    background: #876b4d;
+}
+
+.luxury-light {
+    position: absolute;
+
+    right: 12%;
+    top: 12%;
+
+    width: 65px;
+    height: 65px;
+
+    border-radius: 50%;
+
+    background: rgba(255,205,125,.7);
+
+    box-shadow:
+        0 0 40px rgba(255,180,80,.6);
+}
+
+.minimal-chair {
+    position: absolute;
+
+    left: 35%;
+    bottom: 18%;
+
+    width: 100px;
+    height: 110px;
+
+    border-radius: 20px 20px 8px 8px;
+
+    background: #9b8e7d;
+}
+
+.minimal-plant {
+    position: absolute;
+
+    right: 15%;
+    bottom: 20%;
+
+    font-size: 45px;
+}
+
+.scandi-sofa {
+    position: absolute;
+
+    left: 12%;
+    bottom: 20%;
+
+    width: 55%;
+    height: 28%;
+
+    border-radius: 15px;
+
+    background: #a99780;
+}
+
+.scandi-table {
+    position: absolute;
+
+    right: 10%;
+    bottom: 20%;
+
+    width: 22%;
+    height: 12%;
+
+    border-radius: 50%;
+
+    background: #795f46;
+}
+
+
+/* =========================================================
+   HOW IT WORKS
+========================================================= */
+
+.how-section {
+    width: 100%;
+
+    padding: 100px 7%;
+
+    background: #f8f5f0;
+}
+
+.center-heading {
+    text-align: center;
+
+    margin-bottom: 60px;
+}
+
+.center-heading h2 {
+    max-width: 750px;
+
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.process-grid {
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 18px;
+}
+
+.process-card {
+    min-width: 0;
+
+    padding: 30px 25px;
+
+    background: #eee9e1;
+
+    border: 1px solid #ded6cb;
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease;
+}
+
+.process-card:hover {
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 15px 30px rgba(48,40,32,.08);
+}
+
+.process-number {
+    color: #a08362;
+
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+}
+
+.process-icon {
+    margin: 35px 0 25px;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #292721;
+    color: #fff;
+
+    border-radius: 50%;
+
+    font-family: Arial, sans-serif;
+}
+
+.process-card h3 {
+    margin: 0 0 14px;
+
+    color: #302d28;
+
+    font-size: 18px;
+    font-weight: normal;
+}
+
+.process-card p {
+    margin: 0;
+
+    color: #756f66;
+
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+
+/* =========================================================
+   WHAT-IF AI SIMULATOR
+========================================================= */
+
+.what-if-section {
+    width: 100%;
+
+    padding: 100px 7%;
+
+    background: #292721;
+    color: #fff;
+
+    overflow: hidden;
+}
+
+.what-if-header {
+    max-width: 850px;
+
+    margin: 0 auto 55px;
+
+    text-align: center;
+}
+
+.what-if-header h2 {
+    color: #fff;
+}
+
+.what-if-header p {
+    max-width: 650px;
+
+    margin: 20px auto 0;
+
+    color: #aaa49a;
+
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.what-if-panel {
+    max-width: 1150px;
+
+    margin: 0 auto;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.2fr)
+        minmax(320px, .8fr);
+
+    gap: 55px;
+
+    align-items: center;
+}
+
+
+/* =========================================================
+   WHAT-IF ROOM
+========================================================= */
+
+.what-if-room {
+    position: relative;
+
+    width: 100%;
+    min-height: 410px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ded5c8,
+            #b7a995
+        );
+
+    border: 1px solid #5a554c;
+
+    overflow: hidden;
+}
+
+.what-if-room::after {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 40%;
+
+    background: #9e8d77;
+
+    clip-path: polygon(
+        0 20%,
+        100% 0,
+        100% 100%,
+        0 100%
+    );
+}
+
+.sim-window {
+    position: absolute;
+
+    top: 45px;
+    left: 55px;
+
+    width: 145px;
+    height: 120px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #c8d7dc,
+            #84999e
+        );
+
+    border: 8px solid #eee8de;
+
+    z-index: 2;
+}
+
+.sim-sofa {
+    position: absolute;
+
+    left: 100px;
+    bottom: 95px;
+
+    width: 250px;
+    height: 100px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #62584d;
+    color: #fff;
+
+    border-radius: 15px;
+
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+
+    z-index: 5;
+}
+
+.sim-table {
+    position: absolute;
+
+    right: 100px;
+    bottom: 115px;
+
+    width: 125px;
+    height: 60px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #765f48;
+    color: #fff;
+
+    border-radius: 50%;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+
+    z-index: 5;
+}
+
+.sim-plant {
+    position: absolute;
+
+    right: 35px;
+    bottom: 90px;
+
+    font-size: 45px;
+
+    z-index: 6;
+}
+
+.sim-path {
+    position: absolute;
+
+    left: 50%;
+    bottom: 35px;
+
+    transform: translateX(-50%);
+
+    padding: 7px 14px;
+
+    border: 1px dashed #766d61;
+
+    color: #eee7dc;
+
+    font-family: Arial, sans-serif;
+    font-size: 8px;
+    letter-spacing: 1px;
+
+    z-index: 10;
+}
+
+
+/* =========================================================
+   SIMULATION RESULTS
+========================================================= */
+
+.simulation-results {
+    min-width: 0;
+}
+
+.result-label {
+    color: #b99a74;
+
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+}
+
+.simulation-results h3 {
+    margin: 15px 0;
+
+    color: #fff;
+
+    font-size: 34px;
+    font-weight: normal;
+}
+
+.simulation-description {
+    margin: 0 0 30px;
+
+    color: #aaa49a;
+
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+.result-item {
+    min-height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-top: 1px solid #49453e;
+
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+}
+
+.result-item:last-of-type {
+    border-bottom: 1px solid #49453e;
+}
+
+.result-item span {
+    color: #aaa49a;
+}
+
+.result-item strong {
+    color: #d2b28a;
+    font-weight: normal;
+}
+
+.result-item strong.safe {
+    color: #9dc49a;
+}
+
+.simulation-button {
+    width: 100%;
+
+    margin-top: 28px;
+
+    min-height: 48px;
+
+    border: 1px solid #806c55;
+
+    background: #b4936c;
+    color: #292721;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+
+    transition:
+        background .25s ease,
+        transform .25s ease;
+}
+
+.simulation-button:hover {
+    background: #c7aa84;
+    transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   DAY / NIGHT SECTION
+========================================================= */
+
+.day-night-section {
+    width: 100%;
+
+    padding: 100px 7%;
+
+    background: #f5f1eb;
+
+    overflow: hidden;
+}
+
+.day-night-header {
+    max-width: 850px;
+
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+.day-night-header p {
+    max-width: 650px;
+
+    margin: 20px auto 0;
+
+    color: #716c62;
+
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.day-night-panel {
+    width: 100%;
+    max-width: 1150px;
+
+    margin: 55px auto 0;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.2fr)
+        minmax(320px, .8fr);
+
+    gap: 55px;
+
+    align-items: center;
+}
+
+
+/* =========================================================
+   LIGHTING ROOM
+========================================================= */
+
+.lighting-room {
+    position: relative;
+
+    width: 100%;
+    min-width: 0;
+
+    height: 430px;
+
+    overflow: hidden;
+
+    border: 1px solid #d5cdc1;
+
+    background:
+        linear-gradient(
+            135deg,
+            #e6ddd0,
+            #b8aa98
+        );
+
+    transition:
+        background .5s ease,
+        filter .5s ease;
+}
+
+.lighting-room::after {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 42%;
+
+    background: #9d8d77;
+
+    clip-path: polygon(
+        0 20%,
+        100% 0,
+        100% 100%,
+        0 100%
+    );
+}
+
+.lighting-window {
+    position: absolute;
+
+    left: 55px;
+    top: 45px;
+
+    width: 150px;
+    height: 125px;
+
+    border: 8px solid #f2ede5;
+
+    background:
+        linear-gradient(
+            135deg,
+            #b9d1d8,
+            #718a91
+        );
+
+    transition:
+        background .5s ease,
+        box-shadow .5s ease;
+
+    z-index: 2;
+}
+
+.lighting-sofa {
+    position: absolute;
+
+    left: 95px;
+    bottom: 90px;
+
+    width: 260px;
+    height: 100px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #6c6256;
+    color: #fff;
+
+    border-radius: 16px;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+
+    z-index: 5;
+}
+
+.lighting-table {
+    position: absolute;
+
+    right: 95px;
+    bottom: 110px;
+
+    width: 120px;
+    height: 55px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #765f48;
+    color: #fff;
+
+    border-radius: 50%;
+
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+
+    z-index: 5;
+}
+
+.lighting-plant {
+    position: absolute;
+
+    right: 28px;
+    bottom: 85px;
+
+    font-size: 48px;
+
+    z-index: 7;
+}
+
+.lighting-lamp {
+    position: absolute;
+
+    right: 190px;
+    bottom: 80px;
+
+    font-size: 42px;
+
+    opacity: .35;
+
+    transition:
+        opacity .5s ease,
+        filter .5s ease;
+
+    z-index: 8;
+}
+
+.lighting-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    z-index: 20;
+
+    transition:
+        background .5s ease;
+}
+
+.lighting-time {
+    position: absolute;
+
+    right: 20px;
+    top: 20px;
+
+    padding: 8px 12px;
+
+    background: rgba(41,39,33,.78);
+    color: #fff;
+
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+
+    z-index: 30;
+}
+
+
+/* =========================================================
+   MORNING
+========================================================= */
+
+.lighting-morning {
+    background:
+        linear-gradient(
+            135deg,
+            #e8e1d6,
+            #b8aa97
+        );
+}
+
+.lighting-morning .lighting-window {
+    background:
+        linear-gradient(
+            135deg,
+            #dcecf0,
+            #91afb5
+        );
+
+    box-shadow:
+        0 0 45px rgba(255,255,255,.5);
+}
+
+.lighting-morning .lighting-overlay {
+    background:
+        radial-gradient(
+            circle at 75% 65%,
+            rgba(255,225,170,.22),
+            transparent 40%
+        );
+}
+
+.lighting-morning .lighting-lamp {
+    opacity: .25;
+}
+
+
+/* =========================================================
+   EVENING
+========================================================= */
+
+.lighting-evening {
+    background:
+        linear-gradient(
+            135deg,
+            #9d8171,
+            #4b4140
+        );
+}
+
+.lighting-evening .lighting-window {
+    background:
+        linear-gradient(
+            135deg,
+            #8a5960,
+            #3d3b49
+        );
+
+    box-shadow:
+        0 0 55px rgba(255,150,90,.35);
+}
+
+.lighting-evening .lighting-overlay {
+    background:
+        radial-gradient(
+            circle at 75% 70%,
+            rgba(255,180,80,.38),
+            transparent 38%
+        );
+}
+
+.lighting-evening .lighting-lamp {
+    opacity: .8;
+
+    filter:
+        drop-shadow(
+            0 0 25px
+            rgba(255,190,90,.9)
+        );
+}
+
+
+/* =========================================================
+   NIGHT
+========================================================= */
+
+.lighting-night {
+    background:
+        linear-gradient(
+            135deg,
+            #373a45,
+            #171922
+        );
+}
+
+.lighting-night .lighting-window {
+    background:
+        linear-gradient(
+            135deg,
+            #273a55,
+            #111a2b
+        );
+
+    box-shadow:
+        0 0 50px rgba(80,130,220,.25);
+}
+
+.lighting-night .lighting-overlay {
+    background:
+        radial-gradient(
+            circle at 75% 70%,
+            rgba(255,160,60,.35),
+            transparent 32%
+        );
+}
+
+.lighting-night .lighting-lamp {
+    opacity: 1;
+
+    filter:
+        drop-shadow(
+            0 0 30px
+            rgba(255,180,70,1)
+        );
+}
+
+
+/* =========================================================
+   LIGHTING CONTROLS
+========================================================= */
+
+.lighting-controls {
+    width: 100%;
+    min-width: 0;
+}
+
+.control-label {
+    color: #a08362;
+
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.lighting-controls h3 {
+    margin: 15px 0;
+
+    color: #2e2a25;
+
+    font-size: 30px;
+    font-weight: normal;
+}
+
+.lighting-controls > p {
+    margin: 0 0 28px;
+
+    color: #746e65;
+
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+
+/* =========================================================
+   TIME OPTIONS
+========================================================= */
+
+.time-options {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 10px;
+}
+
+.time-option {
+    min-width: 0;
+
+    padding: 17px 10px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    border: 1px solid #d2c8ba;
+
+    background: #eee9e1;
+    color: #625c53;
+
+    transition:
+        background .3s ease,
+        color .3s ease,
+        transform .2s ease,
+        border-color .3s ease;
+}
+
+.time-option:hover {
+    transform: translateY(-2px);
+    border-color: #b4936c;
+}
+
+.time-option strong {
+    font-size: 20px;
+    font-weight: normal;
+}
+
+.time-option span {
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+}
+
+.time-option.active {
+    background: #b4936c;
+    color: #292721;
+    border-color: #b4936c;
+}
+
+
+/* =========================================================
+   LIGHTING RESULT
+========================================================= */
+
+.lighting-result {
+    margin-top: 25px;
+
+    border-top: 1px solid #d7cfc3;
+}
+
+.lighting-result > div {
+    min-height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 1px solid #d7cfc3;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+}
+
+.lighting-result span {
+    color: #766f65;
+}
+
+.lighting-result strong {
+    color: #3b342c;
+    font-weight: normal;
+}
+
+.lighting-button {
+    width: 100%;
+
+    margin-top: 25px;
+
+    min-height: 46px;
+
+    border: 1px solid #292721;
+
+    background: #292721;
+    color: #fff;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+
+    transition:
+        background .25s ease,
+        transform .25s ease;
+}
+
+.lighting-button:hover {
+    background: #4a453c;
+    transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   AI SECTION
+========================================================= */
+
+.ai-section {
+    width: auto;
+
+    margin: 0 7% 100px;
+
+    padding: 75px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(380px, 1fr);
+
+    gap: 70px;
+
+    align-items: center;
+
+    background: #292721;
+    color: #fff;
+
+    overflow: hidden;
+}
+
+.ai-section-content {
+    width: 100%;
+    min-width: 0;
+    max-width: 560px;
+}
+
+.ai-section-content > span {
+    display: block;
+
+    color: #b99a74;
+
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+}
+
+.ai-section h2 {
+    max-width: 520px;
+
+    margin: 15px 0 0;
+
+    color: #fff;
+
+    font-size: 48px;
+    font-weight: normal;
+    line-height: 1.1;
+}
+
+.ai-section h2 em {
+    color: #c6a680;
+}
+
+.ai-section-content p {
+    width: 100%;
+    max-width: 480px;
+
+    margin: 20px 0 30px;
+
+    color: #b9b4aa;
+
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+
+/* =========================================================
+   AI TECHNOLOGY CARDS
+========================================================= */
+
+.ai-tech {
+    width: 100%;
+    min-width: 0;
+    max-width: 560px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 14px;
+}
+
+.tech-box {
+    width: 100%;
+    min-width: 0;
+
+    padding: 24px 18px;
+
+    border: 1px solid #514c43;
+
+    background: #332f29;
+
+    overflow: hidden;
+
+    transition:
+        background .3s ease,
+        transform .3s ease,
+        border-color .3s ease;
+}
+
+.tech-box:hover {
+    transform: translateY(-4px);
+
+    background: #3c3730;
+
+    border-color: #776753;
+}
+
+.tech-box strong {
+    display: block;
+
+    color: #d0b28b;
+
+    font-family: Arial, sans-serif;
+    font-size: 23px;
+    font-weight: bold;
+}
+
+.tech-box span {
+    display: block;
+
+    margin-top: 10px;
+
+    color: #aaa49a;
+
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    line-height: 1.5;
+
+    overflow-wrap: break-word;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.interior-footer {
+    width: 100%;
+
+    padding: 30px 7%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 25px;
+
+    background: #292721;
+    color: #aaa49a;
+
+    border-top: 1px solid #444039;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    color: #fff;
+}
+
+.footer-logo .logo-box {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #fff;
+    color: #292721;
+
+    border-radius: 50%;
+
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.interior-footer p {
+    margin: 0;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
+    .interior-hero {
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(0, 1fr);
+
+        gap: 25px;
+
+        padding-left: 5%;
+        padding-right: 5%;
+    }
+
+    .hero-left h1 {
+        font-size: clamp(45px, 5vw, 65px);
+    }
+
+    .hero-room-area {
+        height: 500px;
+    }
+
+    .interior-room {
+        height: 450px;
+    }
+
+    .design-sofa {
+        left: 60px;
+    }
+
+    .ai-section {
+        margin-left: 5%;
+        margin-right: 5%;
+
+        padding: 60px 45px;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(340px, 1fr);
+
+        gap: 45px;
+    }
+
+    .what-if-panel,
+    .day-night-panel {
+        gap: 35px;
+    }
+}
+
+
+/* =========================================================
+   TABLET / SMALL LAPTOP
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .interior-menu {
+        gap: 20px;
+        padding: 0 25px;
+    }
+
+    .interior-menu a {
+        font-size: 11px;
+    }
+
+    .interior-hero {
+        grid-template-columns: 1fr;
+
+        padding-top: 65px;
+    }
+
+    .hero-left {
+        max-width: 700px;
+
+        margin: 0 auto;
+
+        text-align: center;
+    }
+
+    .hero-description {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-buttons,
+    .hero-features {
+        justify-content: center;
+    }
+
+    .hero-room-area {
+        height: 500px;
+
+        max-width: 700px;
+
+        margin: 0 auto;
+    }
+
+    .style-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        grid-template-rows:
+            300px
+            300px;
+    }
+
+    .style-large {
+        grid-row: auto;
+    }
+
+    .process-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .what-if-panel,
+    .day-night-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .what-if-room,
+    .lighting-room {
+        min-height: 400px;
+    }
+
+    .ai-section {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-section-content,
+    .ai-tech {
+        max-width: 100%;
+    }
+
+    .ai-tech {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .interior-menu {
+        min-height: 65px;
+
+        padding: 0 15px;
+
+        gap: 14px;
+
+        overflow-x: auto;
+        justify-content: flex-start;
+
+        scrollbar-width: none;
+    }
+
+    .interior-menu::-webkit-scrollbar {
+        display: none;
+    }
+
+    .interior-menu a {
+        flex-shrink: 0;
+
+        font-size: 10px;
+    }
+
+    .interior-hero {
+        min-height: auto;
+
+        padding: 55px 20px 60px;
+    }
+
+    .hero-small-label {
+        font-size: 8px;
+    }
+
+    .hero-left h1 {
+        font-size: 47px;
+
+        letter-spacing: -2px;
+    }
+
+    .hero-description {
+        font-size: 12px;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+
+        align-items: stretch;
+
+        max-width: 280px;
+
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .design-button,
+    .explore-button {
+        width: 100%;
+    }
+
+    .hero-features {
+        gap: 20px;
+    }
+
+    .hero-features > div {
+        flex: 1;
+        min-width: 75px;
+    }
+
+    .hero-room-area {
+        height: 370px;
+    }
+
+    .interior-room {
+        width: 100%;
+        height: 340px;
+    }
+
+    .room-window {
+        top: 35px;
+        left: 35px;
+
+        width: 105px;
+        height: 90px;
+
+        border-width: 6px;
+    }
+
+    .wall-art {
+        top: 35px;
+        right: 30px;
+
+        width: 80px;
+        height: 95px;
+    }
+
+    .design-sofa {
+        left: 35px;
+        bottom: 65px;
+
+        width: 175px;
+        height: 100px;
+    }
+
+    .sofa-back {
+        width: 175px;
+        height: 70px;
+    }
+
+    .sofa-seat {
+        width: 160px;
+        height: 35px;
+    }
+
+    .sofa-cushion {
+        width: 48px;
+        height: 42px;
+
+        bottom: 52px;
+    }
+
+    .cushion-one {
+        left: 25px;
+    }
+
+    .cushion-two {
+        left: 80px;
+    }
+
+    .coffee-table {
+        right: 25px;
+        bottom: 70px;
+
+        transform: scale(.75);
+        transform-origin: bottom right;
+    }
+
+    .design-plant {
+        right: 10px;
+        bottom: 70px;
+
+        transform: scale(.7);
+        transform-origin: bottom right;
+    }
+
+    .floor-lamp {
+        display: none;
+    }
+
+    .design-rug {
+        left: 30px;
+        bottom: 20px;
+
+        width: 280px;
+        height: 90px;
+    }
+
+
+    /* STYLE */
+
+    .styles-section {
+        padding: 70px 20px;
+    }
+
+    .section-heading {
+        display: block;
+    }
+
+    .section-heading p {
+        margin-top: 20px;
+    }
+
+    .style-grid {
+        display: block;
+    }
+
+    .style-item {
+        width: 100%;
+        height: 300px;
+
+        margin-bottom: 15px;
+    }
+
+
+    /* HOW IT WORKS */
+
+    .how-section {
+        padding: 70px 20px;
+    }
+
+    .center-heading h2,
+    .section-heading h2,
+    .what-if-header h2,
+    .day-night-header h2 {
+        font-size: 38px;
+    }
+
+    .process-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    /* WHAT IF */
+
+    .what-if-section {
+        padding: 70px 20px;
+    }
+
+    .what-if-room {
+        min-height: 320px;
+    }
+
+    .sim-window {
+        left: 25px;
+        top: 30px;
+
+        width: 100px;
+        height: 85px;
+    }
+
+    .sim-sofa {
+        left: 35px;
+        bottom: 70px;
+
+        width: 165px;
+        height: 70px;
+    }
+
+    .sim-table {
+        right: 30px;
+        bottom: 85px;
+
+        width: 85px;
+        height: 42px;
+    }
+
+    .sim-plant {
+        right: 10px;
+        bottom: 65px;
+
+        font-size: 35px;
+    }
+
+    .sim-path {
+        font-size: 7px;
+    }
+
+
+    /* DAY NIGHT */
+
+    .day-night-section {
+        padding: 70px 20px;
+    }
+
+    .lighting-room {
+        height: 320px;
+    }
+
+    .lighting-window {
+        left: 30px;
+        top: 30px;
+
+        width: 100px;
+        height: 85px;
+    }
+
+    .lighting-sofa {
+        left: 35px;
+        bottom: 70px;
+
+        width: 165px;
+        height: 70px;
+    }
+
+    .lighting-table {
+        right: 30px;
+        bottom: 85px;
+
+        width: 85px;
+        height: 42px;
+    }
+
+    .lighting-plant {
+        right: 8px;
+        bottom: 65px;
+
+        font-size: 35px;
+    }
+
+    .lighting-lamp {
+        right: 125px;
+        bottom: 65px;
+
+        font-size: 30px;
+    }
+
+    .time-options {
+        grid-template-columns: 1fr;
+    }
+
+
+    /* AI */
+
+    .ai-section {
+        margin: 0 20px 60px;
+
+        padding: 45px 25px;
+
+        grid-template-columns: 1fr;
+
+        gap: 40px;
+    }
+
+    .ai-section h2 {
+        font-size: 40px;
+    }
+
+    .ai-tech {
+        grid-template-columns: 1fr;
+    }
+
+    .tech-box {
+        width: 100%;
+    }
+
+
+    /* FOOTER */
+
+    .interior-footer {
+        padding: 30px 20px;
+
+        flex-direction: column;
+
+        text-align: center;
+
+        gap: 15px;
+    }
+
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media (max-width: 400px) {
+
+    .hero-left h1 {
+        font-size: 40px;
+    }
+
+    .hero-features {
+        gap: 12px;
+    }
+
+    .hero-features span {
+        font-size: 9px;
+    }
+
+    .hero-room-area {
+        height: 320px;
+    }
+
+    .interior-room {
+        height: 295px;
+    }
+
+    .styles-section,
+    .how-section,
+    .what-if-section,
+    .day-night-section {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .ai-section {
+        margin-left: 15px;
+        margin-right: 15px;
+
+        padding: 35px 20px;
+    }
+
+}

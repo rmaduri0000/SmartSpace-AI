@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Room Details — SmartSpace AI</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- Top Navbar matching Screenshots 1, 2, 5 -->
+  <header class="site-nav">
+    <a href="/" class="brand-logo">
+      <span class="logo-spark">✨</span>
+      <span class="brand-text">SmartSpace AI</span>
+    </a>
+
+    <nav class="nav-links">
+      <a href="/create-project" class="nav-link">Back</a>
+      <span class="status-pill" style="font-size: 0.78rem;">
+        <span class="pulse-dot"></span> Local Model (Offline)
+      </span>
+    </nav>
+  </header>
+
+  <main class="form-container">
+    
+    <div class="form-page-header">
+      <h1 class="form-title">Room Details</h1>
+      <p class="form-subtitle">Tell SmartSpace AI about your room.</p>
+    </div>
+
+    <form id="roomDetailsForm" class="form-card" enctype="multipart/form-data">
+      
+      <!-- ========================================== -->
+      <!-- 1. Room Information                        -->
+      <!-- ========================================== -->
+      <div class="form-section-title">1. Room Information</div>
+
+      <div class="form-group">
+        <label for="roomName" class="form-label">Room Name</label>
+        <input 
+          type="text" 
+          id="roomName" 
+          name="roomName" 
+          class="form-input" 
+          placeholder="Example: Master Bedroom" 
+          required 
+          value="Master Suite"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="roomType" class="form-label">Room Type</label>
+        <select id="roomType" name="roomType" class="form-select" required>
+          <option value="Office">Office</option>
+          <option value="Living Room">Living Room</option>
+          <option value="Master Bedroom" selected>Master Bedroom</option>
+          <option value="Studio Apartment">Studio Apartment</option>
+        </select>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- 2. Room Dimensions                         -->
+      <!-- ========================================== -->
+      <div class="form-section-title">2. Room Dimensions</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="roomLength" class="form-label">Length (ft)</label>
+          <input type="number" id="roomLength" name="length" class="form-input" min="6" max="60" step="0.5" value="12" required>
+        </div>
+
+        <div class="form-group">
+          <label for="roomWidth" class="form-label">Width (ft)</label>
+          <input type="number" id="roomWidth" name="width" class="form-input" min="6" max="60" step="0.5" value="10" required>
+        </div>
+
+        <div class="form-group">
+          <label for="roomHeight" class="form-label">Height (ft)</label>
+          <input type="number" id="roomHeight" name="height" class="form-input" min="7" max="25" step="0.5" value="10" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="numDoors" class="form-label">Number of Doors</label>
+          <input type="number" id="numDoors" name="doors" class="form-input" min="1" max="5" value="1" required>
+        </div>
+
+        <div class="form-group">
+          <label for="numWindows" class="form-label">Number of Windows</label>
+          <input type="number" id="numWindows" name="windows" class="form-input" min="0" max="6" value="1" required>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- 3. Budget                                  -->
+      <!-- ========================================== -->
+      <div class="form-section-title">3. Budget</div>
+
+      <div class="form-group">
+        <label for="maxBudget" class="form-label">Maximum Budget (₹)</label>
+        <input type="number" id="maxBudget" name="budget" class="form-input" min="5000" step="500" value="20000" required>
+        <div class="form-hint">The AI design and furniture selection will use this amount as the maximum budget.</div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- 4. Design Preferences                      -->
+      <!-- ========================================== -->
+      <div class="form-section-title">4. Design Preferences</div>
+
+      <div class="form-group">
+        <label for="designStyle" class="form-label">Design Style</label>
+        <select id="designStyle" name="designStyle" class="form-select">
+          <option value="Modern" selected>Modern</option>
+          <option value="Minimalist">Minimalist</option>
+          <option value="Scandinavian">Scandinavian</option>
+          <option value="Industrial">Industrial</option>
+          <option value="Contemporary">Contemporary</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="primaryColor" class="form-label">Primary Color</label>
+          <input type="text" id="primaryColor" name="primaryColor" class="form-input" value="White">
+        </div>
+
+        <div class="form-group">
+          <label for="secondaryColor" class="form-label">Secondary Color</label>
+          <input type="text" id="secondaryColor" name="secondaryColor" class="form-input" value="Beige">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="preferredMaterial" class="form-label">Preferred Material</label>
+        <select id="preferredMaterial" name="preferredMaterial" class="form-select">
+          <option value="Wood" selected>Wood</option>
+          <option value="Metal">Metal</option>
+          <option value="Glass">Glass</option>
+          <option value="Fabric / Upholstered">Fabric / Upholstered</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="roomDescription" class="form-label">Description</label>
+        <textarea 
+          id="roomDescription" 
+          name="description" 
+          class="form-textarea" 
+          placeholder="Describe your requirements..."
+        >Need comfortable circulation around the bed, a dedicated desk area with daylight, and matching wardrobe storage.</textarea>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- 5. Upload Room Image                       -->
+      <!-- ========================================== -->
+      <div class="form-section-title">5. Upload Room Image</div>
+
+      <div id="dropZone" class="upload-dropzone">
+        <div class="upload-btn-row">
+          <button type="button" id="browseFileBtn" class="choose-file-btn">Choose File</button>
+          <span id="fileNameLabel" style="font-size: 0.85rem; color: var(--text-dim);">No file chosen</span>
+        </div>
+        <div class="form-hint">Upload a clear photo of your room. JPG, JPEG or PNG • Maximum 10 MB</div>
+        <input type="file" id="roomPhotoInput" name="roomPhoto" accept="image/*" style="display: none;">
+        <div id="imgPreviewWrapper" style="display: none; margin-top: 0.75rem;">
+          <img id="imgThumbnail" src="" style="max-height: 120px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" id="saveRoomBtn" class="btn-primary-gradient">
+        Save Room & Continue ➜
+      </button>
+
+    </form>
+
+  </main>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const browseFileBtn = document.getElementById('browseFileBtn');
+    const roomPhotoInput = document.getElementById('roomPhotoInput');
+    const fileNameLabel = document.getElementById('fileNameLabel');
+    const imgPreviewWrapper = document.getElementById('imgPreviewWrapper');
+    const imgThumbnail = document.getElementById('imgThumbnail');
+
+    browseFileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      roomPhotoInput.click();
+    });
+
+    dropZone.addEventListener('click', () => {
+      roomPhotoInput.click();
+    });
+
+    roomPhotoInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        showPreview(e.target.files[0]);
+      }
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--primary)';
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        roomPhotoInput.files = e.dataTransfer.files;
+        showPreview(e.dataTransfer.files[0]);
+      }
+    });
+
+    function showPreview(file) {
+      fileNameLabel.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        imgThumbnail.src = ev.target.result;
+        imgPreviewWrapper.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById('roomDetailsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById('saveRoomBtn');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<span>⚡ Processing with YOLO AI...</span>';
+
+      const formData = new FormData(document.getElementById('roomDetailsForm'));
+
+      try {
+        const res = await fetch('/api/rooms', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          localStorage.setItem('smartspace_current_room', JSON.stringify(data.room));
+          window.location.href = '/studio';
+        } else {
+          alert('Error: ' + (data.error || 'Failed to process room details'));
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = 'Save Room & Continue ➜';
+        }
+      } catch (err) {
+        console.error('Submission error:', err);
+        // Fallback navigate to studio
+        window.location.href = '/studio';
+      }
+    });
+  </script>
+
+</body>
+</html>

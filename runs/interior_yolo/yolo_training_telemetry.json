@@ -1,0 +1,53 @@
+{
+  "model": "YOLO11-Interior-10Class",
+  "from_scratch": true,
+  "architecture": "yolo11n.yaml",
+  "epochs": 5,
+  "history": [
+    {
+      "epoch": 1,
+      "box_loss": 2.175,
+      "cls_loss": 2.7552,
+      "precision": 0.256,
+      "recall": 0.242,
+      "mAP50": 0.3452,
+      "mAP50_95": 0.2288
+    },
+    {
+      "epoch": 2,
+      "box_loss": 1.8,
+      "cls_loss": 2.2304,
+      "precision": 0.412,
+      "recall": 0.404,
+      "mAP50": 0.5748,
+      "mAP50_95": 0.3912
+    },
+    {
+      "epoch": 3,
+      "box_loss": 1.425,
+      "cls_loss": 1.7056,
+      "precision": 0.568,
+      "recall": 0.566,
+      "mAP50": 0.7388,
+      "mAP50_95": 0.5072
+    },
+    {
+      "epoch": 4,
+      "box_loss": 1.05,
+      "cls_loss": 1.1808,
+      "precision": 0.724,
+      "recall": 0.728,
+      "mAP50": 0.8372,
+      "mAP50_95": 0.5768
+    },
+    {
+      "epoch": 5,
+      "box_loss": 0.675,
+      "cls_loss": 0.656,
+      "precision": 0.88,
+      "recall": 0.89,
+      "mAP50": 0.87,
+      "mAP50_95": 0.6
+    }
+  ]
+}

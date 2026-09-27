@@ -1,0 +1,476 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SmartSpace AI | Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            <div class="brand-logo">✦</div>
+
+            <div>
+                <h2>SmartSpace</h2>
+                <span>AI INTERIOR DESIGN</span>
+            </div>
+        </div>
+
+        <div class="menu-title">WORKSPACE</div>
+
+        <nav class="navigation">
+
+            <a href="/" class="nav-item active">
+                <span>⌂</span>
+                Dashboard
+            </a>
+
+            <a href="/create-project" class="nav-item">
+                <span>＋</span>
+                Create Project
+            </a>
+
+            <a href="/studio" class="nav-item">
+                <span>◈</span>
+                Design Studio
+            </a>
+
+            <a href="/room-details" class="nav-item">
+                <span>▣</span>
+                Room Analysis
+            </a>
+
+        </nav>
+
+        <div class="menu-title">AI SYSTEM</div>
+
+        <div class="ai-box">
+
+            <div class="online-dot"></div>
+
+            <div>
+                <strong>AI Engine Online</strong>
+                <small>YOLO · DQN · A*</small>
+            </div>
+
+        </div>
+
+        <div class="sidebar-footer">
+            SmartSpace AI v1.0
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- TOP BAR -->
+        <header class="topbar">
+
+            <div>
+                <p class="eyebrow">SMARTSPACE AI</p>
+
+                <h1>Interior Design Dashboard</h1>
+
+                <p class="subtitle">
+                    Design smarter. Optimize better. Build beautiful spaces.
+                </p>
+            </div>
+
+            <div class="top-actions">
+
+                <button class="notification">
+                    ♢
+                </button>
+
+                <div class="profile">
+                    RM
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- HERO -->
+        <section class="hero">
+
+            <div class="hero-content">
+
+                <div class="hero-tag">
+                    ✦ AI POWERED INTERIOR DESIGN
+                </div>
+
+                <h2>
+                    Transform your room<br>
+                    with <span>Artificial Intelligence.</span>
+                </h2>
+
+                <p>
+                    Upload your room, detect furniture automatically,
+                    optimize the layout and create an intelligent
+                    interior design experience.
+                </p>
+
+                <div class="hero-buttons">
+
+                    <a href="/create-project"
+                       class="btn btn-primary">
+                        Start New Design
+                        <span>→</span>
+                    </a>
+
+                    <a href="/studio"
+                       class="btn btn-secondary">
+                        Open Design Studio
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="hero-visual">
+
+                <div class="room-card">
+
+                    <div class="room-header">
+                        <span>AI ROOM PREVIEW</span>
+                        <span class="live">● LIVE</span>
+                    </div>
+
+                    <div class="room-scene">
+
+                        <div class="room-wall"></div>
+
+                        <div class="sofa">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+
+                        <div class="table"></div>
+
+                        <div class="plant">
+                            🌿
+                        </div>
+
+                    </div>
+
+                    <div class="scan-line"></div>
+
+                    <div class="detection detection-one">
+                        SOFA · 98%
+                    </div>
+
+                    <div class="detection detection-two">
+                        TABLE · 94%
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- STATISTICS -->
+        <section class="stats-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-icon purple">
+                    ◉
+                </div>
+
+                <div>
+                    <span>Object Detection</span>
+                    <strong>YOLO</strong>
+                    <small>Computer Vision</small>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon blue">
+                    ◈
+                </div>
+
+                <div>
+                    <span>Layout Optimization</span>
+                    <strong>DQN</strong>
+                    <small>Deep Reinforcement Learning</small>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon green">
+                    ◎
+                </div>
+
+                <div>
+                    <span>Path Planning</span>
+                    <strong>A*</strong>
+                    <small>Smart Circulation</small>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon orange">
+                    ↗
+                </div>
+
+                <div>
+                    <span>Design Efficiency</span>
+                    <strong>92%</strong>
+                    <small>AI Evaluation Score</small>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- AI PIPELINE -->
+        <section class="section">
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="eyebrow">INTELLIGENT PIPELINE</p>
+                    <h2>How SmartSpace AI Works</h2>
+                </div>
+
+            </div>
+
+
+            <div class="pipeline">
+
+                <div class="pipeline-step">
+
+                    <div class="step-number">01</div>
+
+                    <div class="step-icon">
+                        ↑
+                    </div>
+
+                    <h3>Upload</h3>
+
+                    <p>
+                        Upload your room image
+                        and provide room details.
+                    </p>
+
+                </div>
+
+
+                <div class="pipeline-line"></div>
+
+
+                <div class="pipeline-step">
+
+                    <div class="step-number">02</div>
+
+                    <div class="step-icon">
+                        ◉
+                    </div>
+
+                    <h3>YOLO Detection</h3>
+
+                    <p>
+                        Detect furniture and
+                        objects automatically.
+                    </p>
+
+                </div>
+
+
+                <div class="pipeline-line"></div>
+
+
+                <div class="pipeline-step">
+
+                    <div class="step-number">03</div>
+
+                    <div class="step-icon">
+                        ◈
+                    </div>
+
+                    <h3>DQN Optimization</h3>
+
+                    <p>
+                        Find an optimized
+                        furniture arrangement.
+                    </p>
+
+                </div>
+
+
+                <div class="pipeline-line"></div>
+
+
+                <div class="pipeline-step">
+
+                    <div class="step-number">04</div>
+
+                    <div class="step-icon">
+                        ◎
+                    </div>
+
+                    <h3>A* Evaluation</h3>
+
+                    <p>
+                        Check movement and
+                        room circulation.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- FEATURES -->
+        <section class="section">
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="eyebrow">SMART TOOLS</p>
+                    <h2>Design Everything in One Place</h2>
+                </div>
+
+            </div>
+
+
+            <div class="feature-grid">
+
+                <div class="feature-card">
+
+                    <div class="feature-top">
+                        <div class="feature-icon">▣</div>
+                        <span>01</span>
+                    </div>
+
+                    <h3>Room Analysis</h3>
+
+                    <p>
+                        Analyze your room dimensions,
+                        furniture and available space.
+                    </p>
+
+                    <a href="/room-details">
+                        Analyze Room →
+                    </a>
+
+                </div>
+
+
+                <div class="feature-card">
+
+                    <div class="feature-top">
+                        <div class="feature-icon">◈</div>
+                        <span>02</span>
+                    </div>
+
+                    <h3>AI Layout</h3>
+
+                    <p>
+                        Let DQN intelligently optimize
+                        furniture placement.
+                    </p>
+
+                    <a href="/studio">
+                        Optimize Layout →
+                    </a>
+
+                </div>
+
+
+                <div class="feature-card">
+
+                    <div class="feature-top">
+                        <div class="feature-icon">◇</div>
+                        <span>03</span>
+                    </div>
+
+                    <h3>Budget Optimizer</h3>
+
+                    <p>
+                        Estimate your interior project
+                        cost based on selected items.
+                    </p>
+
+                    <a href="/create-project">
+                        Estimate Cost →
+                    </a>
+
+                </div>
+
+
+                <div class="feature-card">
+
+                    <div class="feature-top">
+                        <div class="feature-icon">✦</div>
+                        <span>04</span>
+                    </div>
+
+                    <h3>Design Studio</h3>
+
+                    <p>
+                        Experiment with furniture,
+                        layouts and room designs.
+                    </p>
+
+                    <a href="/studio">
+                        Open Studio →
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- FOOTER -->
+        <footer>
+
+            <div>
+                <strong>SmartSpace AI</strong>
+                <span>Intelligent Interior Design System</span>
+            </div>
+
+            <span>
+                Powered by YOLO · DQN · A*
+            </span>
+
+        </footer>
+
+    </main>
+
+</div>
+
+</body>
+</html>
+```

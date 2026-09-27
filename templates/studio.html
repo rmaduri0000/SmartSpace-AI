@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartSpace AI — 2D/3D Studio & Local DQN Optimizer</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+
+  <!-- External Libraries (Three.js, OrbitControls, Chart.js) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* Additional Studio UI styles */
+    .studio-tab-bar {
+      display: flex;
+      gap: 0.35rem;
+      background: rgba(13, 20, 36, 0.7);
+      padding: 0.25rem;
+      border-radius: var(--radius-sm);
+      margin-bottom: 0.75rem;
+      border: 1px solid var(--border-subtle);
+    }
+    .studio-tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.4rem 0.5rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+    .studio-tab-btn.active {
+      background: rgba(59, 130, 246, 0.25);
+      color: #ffffff;
+      border: 1px solid var(--border-focus);
+    }
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+    .catalog-item-card {
+      background: rgba(13, 20, 36, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      transition: var(--transition);
+    }
+    .catalog-item-card:hover {
+      border-color: var(--border-focus);
+      background: rgba(59, 130, 246, 0.08);
+    }
+    .catalog-add-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: var(--transition);
+      width: 100%;
+      text-align: center;
+    }
+    .catalog-add-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    .canvas-tool-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 0.35rem 0.65rem;
+      font-size: 0.8rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .canvas-tool-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .status-badge-lg {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--accent-emerald);
+      padding: 0.45rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="site-nav">
+    <a href="/" class="brand-logo">
+      <span class="logo-spark">✨</span>
+      <span class="brand-text">SmartSpace AI</span>
+    </a>
+
+    <!-- Breadcrumb / Status -->
+    <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
+      <a href="/create-project" style="color: var(--text-muted); text-decoration: none;">Project</a>
+      <span>/</span>
+      <a href="/room-details" style="color: var(--text-muted); text-decoration: none;">Room Details</a>
+      <span>/</span>
+      <span style="color: #ffffff; font-weight: 600;">AI Studio</span>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+      <span class="status-pill" style="font-size: 0.78rem;">
+        <span class="pulse-dot"></span> 100% Local Models (Offline)
+      </span>
+      <a href="/room-details" class="btn-nav-login">Edit Room</a>
+    </div>
+  </header>
+
+  <!-- Studio Header Banner -->
+  <div style="background: rgba(14, 22, 41, 0.8); border-bottom: 1px solid var(--border-subtle); padding: 0.85rem 3.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h2 id="studioRoomName" style="font-family: 'Outfit'; font-size: 1.35rem; font-weight: 700; color: #fff;">Master Bedroom</h2>
+      <div id="studioRoomMeta" style="font-size: 0.84rem; color: var(--text-muted); margin-top: 0.15rem;">
+        Dimensions: 12.0 ft × 10.0 ft (3.66m × 3.05m) · Budget: ₹20,000 · Style: Modern
+      </div>
+    </div>
+
+    <!-- Quick Mode Badges -->
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <span class="class-chip" style="color: var(--accent-cyan); border-color: rgba(6, 182, 212, 0.4);">
+        <span>👁️</span> Local YOLO11 Vision
+      </span>
+      <span class="class-chip" style="color: var(--accent-purple); border-color: rgba(139, 92, 246, 0.4);">
+        <span>🧠</span> Local DQN Reinforcement Learning
+      </span>
+    </div>
+  </div>
+
+  <main class="main-wrapper">
+    <div class="studio-grid">
+
+      <!-- ============================================================== -->
+      <!-- Left Panel: Furniture Inventory & Add Catalog Tabs            -->
+      <!-- ============================================================== -->
+      <aside class="glass-panel">
+        
+        <!-- Left Sub-Tabs -->
+        <div class="studio-tab-bar">
+          <button class="studio-tab-btn active" data-subtab="subtab-inventory">🛋️ Room Furniture</button>
+          <button class="studio-tab-btn" data-subtab="subtab-catalog">➕ Add Furniture</button>
+          <button class="studio-tab-btn" data-subtab="subtab-photo">📸 YOLO Photo</button>
+        </div>
+
+        <!-- 1. Active Furniture List -->
+        <div id="subtab-inventory" class="subtab-content">
+          <div class="panel-header" style="padding-bottom: 0.5rem;">
+            <span class="metric-sub">Click item to select · Drag to move</span>
+          </div>
+
+          <div id="inventoryList" class="inventory-list" style="max-height: 380px;">
+            <!-- Populated dynamically by app.js -->
+          </div>
+        </div>
+
+        <!-- 2. Add Furniture Catalog -->
+        <div id="subtab-catalog" class="subtab-content" style="display: none;">
+          <div class="panel-header" style="padding-bottom: 0.5rem;">
+            <span class="metric-sub">10-Class Furniture Library</span>
+          </div>
+
+          <div class="catalog-grid">
+            <div class="catalog-item-card">
+              <span style="font-size: 0.82rem; font-weight: 600; color: #3b82f6;">Queen Bed</span>
+              <span class="metric-sub">1.6×2.0m · ₹12,000</span>
+              <button class="catalog-add-btn" data-type="bed" data-w="1.6" data-d="2.0" data-cost="12000" data-label="Queen Bed">+ Add</button>
+            </div>
+
+            <div class="catalog-item-card">
+              <span style="font-size: 0.82rem; font-weight: 600; color: #8b5cf6;">3-Seater Sofa</span>
+              <span class="metric-sub">2.1×0.9m · ₹14,000</span>
+              <button class="catalog-add-btn" data-type="sofa" data-w="2.1" data-d="0.9" data-cost="14000" data-label="3-Seater Sofa">+ Add</button>
+            </div>
+
+            <div class="catalog-item-card">
+              <span style="font-size: 0.82rem; font-weight: 600; color: #6366f1;">Study Desk</span>
+              <span class="metric-sub">1.3×0.65m · ₹4,200</span>
+              <button class="catalog-add-btn" data-type="desk" data-w="1.3" data-d="0.65" data-cost="4200" data-label="Study Desk">+ Add</button>
+            </div>
+
+            <div class="catalog-item-card">
+              <span style="font-size: 0.82rem; font-weight: 600; color: #06b6d4;">Desk Chair</span>
+              <span class="metric-sub">0.6×0.6m · ₹1,500</span>
+              <button class="catalog-add-btn" data-type="chair" data-w="0.6" data-d="0.6" data-cost="1500" data-label="Desk Chair">+ Add</button>
+            </div>
+
+            <div class="catalog-item-card">
+              <span style="font-size: 0.82rem; font-weight: 600; color: #f59e0b;">Wardrobe</span>
+              <span class="metric-sub">1.5×0.6m · ₹8,500</span>
+              <button class="catalog-add-btn" data-type="wardrobe" data-w="1.5" data-d="0.6" data-cost="8500" data-label="Wardrobe">+ Add</button>
+            </div>
+
+            <div class="catalog-item-card">
+              <span style="font-size: 0.82rem; font-weight: 600; color: #10b981;">Coffee Table</span>
+              <span class="metric-sub">1.2×0.7m · ₹3,200</span>
+              <button class="catalog-add-btn" data-type="table" data-w="1.2" data-d="0.7" data-cost="3200" data-label="Coffee Table">+ Add</button>
+            </div>
+
+            <div class="catalog-item-card">
+              <span style="font-size: 0.82rem; font-weight: 600; color: #ec4899;">55" TV Unit</span>
+              <span class="metric-sub">1.2×0.15m · ₹7,500</span>
+              <button class="catalog-add-btn" data-type="tv" data-w="1.2" data-d="0.15" data-cost="7500" data-label="55 TV Console">+ Add</button>
+            </div>
+
+            <div class="catalog-item-card">
+              <span style="font-size: 0.82rem; font-weight: 600; color: #f97316;">Side Cabinet</span>
+              <span class="metric-sub">1.0×0.45m · ₹3,500</span>
+              <button class="catalog-add-btn" data-type="cabinet" data-w="1.0" data-d="0.45" data-cost="3500" data-label="Side Cabinet">+ Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. YOLO Vision Detection Photo Sub-Tab -->
+        <div id="subtab-photo" class="subtab-content" style="display: none;">
+          <div class="panel-header" style="padding-bottom: 0.5rem;">
+            <span class="metric-sub">YOLO 10-Class Vision Detections</span>
+          </div>
+
+          <div id="visionBoxWrapper" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <img id="detectedThumbImg" src="/data/samples/sample_room.jpg" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <span class="metric-sub" style="color: var(--accent-cyan);">✓ Elements extracted into room state</span>
+          </div>
+        </div>
+
+        <button id="resetLayoutBtn" class="btn btn-secondary btn-sm" style="width: 100%; margin-top: auto;">
+          <span>↺</span> Reset Layout
+        </button>
+      </aside>
+
+      <!-- ============================================================== -->
+      <!-- Center Viewport: 2D Canvas & 3D WebGL                          -->
+      <!-- ============================================================== -->
+      <section class="glass-panel viewport-card">
+        <div class="viewport-toolbar">
+          
+          <div class="view-mode-toggles">
+            <button class="view-mode-btn active" data-mode="2d">2D Floorplan</button>
+            <button class="view-mode-btn" data-mode="3d">3D WebGL View</button>
+          </div>
+
+          <!-- Canvas Zoom & View Toggles -->
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <button id="zoomInBtn" class="canvas-tool-btn" title="Zoom In">🔍 +</button>
+            <button id="zoomOutBtn" class="canvas-tool-btn" title="Zoom Out">🔍 -</button>
+            <button id="resetViewBtn" class="canvas-tool-btn" title="Center View">⛶ Fit</button>
+            
+            <label style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; margin-left: 0.5rem; cursor: pointer;">
+              <input type="checkbox" id="toggleWalkways" checked> A* Paths
+            </label>
+            <label style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; cursor: pointer;">
+              <input type="checkbox" id="toggleClearances" checked> Clearances
+            </label>
+          </div>
+
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="canvas-container">
+          <canvas id="floorplanCanvas"></canvas>
+          <div id="threejsContainer"></div>
+        </div>
+
+        <!-- Bottom Status Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.75rem; border-top: 1px solid var(--border-subtle); margin-top: 0.5rem;">
+          <div id="actionLog" class="metric-sub" style="color: var(--accent-cyan); font-weight: 500;">
+            Ready. Drag furniture to position, or click Run DQN Layout AI.
+          </div>
+          <button id="exportPngBtn" class="canvas-tool-btn" style="font-size: 0.78rem;">
+            📸 Export 2D Snapshot (.png)
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- Right Panel: DQN Layout Optimization & Analytics               -->
+      <!-- ============================================================== -->
+      <aside class="glass-panel panel-right">
+        
+        <div class="panel-header">
+          <h2 class="panel-title"><span>🧠</span> DQN Layout Engine</h2>
+          <span class="metric-sub">Local RL</span>
+        </div>
+
+        <button id="dqnOptimizeBtn" class="btn btn-dqn" style="width: 100%; font-size: 1rem; padding: 0.9rem;">
+          <span>⚡ Run DQN Layout AI</span>
+        </button>
+
+        <div id="ergonomicsStatus" class="status-badge-lg">
+          🌟 Optimal Ergonomic Layout
+        </div>
+
+        <!-- Telemetry Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">Ergonomics</span>
+            <span id="metricScore" class="metric-value emerald">100%</span>
+            <span class="metric-sub">Research MDP</span>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-label">Collisions</span>
+            <span id="metricCollisions" class="metric-value emerald">0</span>
+            <span class="metric-sub">SAT Intersection</span>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-label">Circulation</span>
+            <span id="metricCirculation" class="metric-value cyan">100%</span>
+            <span class="metric-sub">A* Walking Paths</span>
+          </div>
+
+          <div class="metric-card">
+            <span class="metric-label">Cost</span>
+            <span id="metricCost" class="metric-value purple">₹0</span>
+            <span class="metric-sub">Total Estimate</span>
+          </div>
+        </div>
+
+        <!-- Budget Utilization Bar -->
+        <div class="form-group" style="margin-top: 0.25rem;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
+            <span style="color: var(--text-muted);">Budget Utilization</span>
+            <span id="budgetRatioText" style="color: var(--accent-emerald); font-weight: 600;">₹0 / ₹20,000</span>
+          </div>
+          <div style="width: 100%; height: 7px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin-top: 0.35rem;">
+            <div id="budgetProgressBar" style="height: 100%; width: 50%; background: var(--accent-emerald); transition: var(--transition);"></div>
+          </div>
+        </div>
+
+        <!-- Rules Summary -->
+        <div class="panel-header" style="margin-top: 0.25rem;">
+          <h2 class="panel-title" style="font-size: 0.95rem;"><span>📐</span> Layout Guidelines</h2>
+        </div>
+
+        <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; display: flex; flex-direction: column; gap: 0.35rem;">
+          <div>• <b>A* Walking Paths:</b> Green dashed lines verify clear walking aisles.</div>
+          <div>• <b>Door Clearance:</b> Red arc must remain unobstructed.</div>
+          <div>• <b>Natural Light:</b> Tall items avoid blocking window daylight cones.</div>
+          <div>• <b>Wall Alignment:</b> Beds and wardrobes back against walls.</div>
+        </div>
+
+        <button id="exportSpecBtn" class="btn btn-secondary" style="width: 100%; margin-top: auto;">
+          <span>📥</span> Export Design Spec (.txt)
+        </button>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <script src="/static/js/floorplan_canvas.js"></script>
+  <script src="/static/js/room_3d.js"></script>
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/app.js"></script>
+
+  <script>
+    // Sub-tab switcher in Left Panel
+    document.querySelectorAll('.studio-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.studio-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.subtab-content').forEach(c => c.style.display = 'none');
+
+        btn.classList.add('active');
+        const targetId = btn.getAttribute('data-subtab');
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) targetEl.style.display = 'block';
+      });
+    });
+  </script>
+</body>
+</html>
