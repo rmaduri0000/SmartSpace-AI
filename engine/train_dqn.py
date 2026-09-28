@@ -1,12 +1,9 @@
-"""
-CLI & Batch Training Script for SmartSpace AI DQN Layout Optimizer
-Simulates training across multiple room types and configurations,
-logs reward progression, collision reduction, and convergence statistics.
-"""
+"""Batch-train and save the SmartSpace AI DQN layout optimizer."""
 import argparse
 import json
 import os
 import sys
+from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -16,13 +13,19 @@ from engine.interior_env import InteriorEnv
 from engine.dqn_agent import DQNAgent
 
 def train_dqn(episodes: int = 100, max_steps_per_episode: int = 40, output_dir: str = "data/models"):
+    if episodes < 1 or max_steps_per_episode < 1:
+        raise ValueError("episodes and max_steps_per_episode must both be positive")
     print(f"=== Starting SmartSpace AI DQN Training ({episodes} episodes) ===")
-    os.makedirs(output_dir, exist_ok=True)
+    output_path = Path(output_dir)
+    if not output_path.is_absolute():
+        output_path = Path(__file__).resolve().parents[1] / output_path
+    output_path.mkdir(parents=True, exist_ok=True)
     
     # Initialize environment with Master Bedroom preset
     room_config = SAMPLE_ROOMS["master_bedroom"]
     env = InteriorEnv(room_config)
-    agent = DQNAgent(state_dim=env.state_dim, action_dim=env.action_dim)
+    agent = DQNAgent(state_dim=env.state_dim, action_dim=env.action_dim,
+                     model_path=str(output_path / "dqn_policy.npz"))
     
     history = {
         "episodes": [],
@@ -30,7 +33,8 @@ def train_dqn(episodes: int = 100, max_steps_per_episode: int = 40, output_dir: 
         "ergonomics_scores": [],
         "collision_counts": [],
         "circulation_ratios": [],
-        "loss": []
+        "loss": [],
+        "training_updates": 0
     }
     
     for ep in range(1, episodes + 1):
@@ -46,6 +50,7 @@ def train_dqn(episodes: int = 100, max_steps_per_episode: int = 40, output_dir: 
             loss = agent.train_step()
             if loss is not None:
                 losses.append(loss)
+                history["training_updates"] += 1
                 
             state = next_state
             ep_reward += reward
@@ -72,11 +77,17 @@ def train_dqn(episodes: int = 100, max_steps_per_episode: int = 40, output_dir: 
                   f"Circulation: {final_metrics['circulation_ratio']*100:4.0f}% | "
                   f"Epsilon: {agent.epsilon:.3f}")
                   
-    history_file = os.path.join(output_dir, "dqn_training_history.json")
+    if agent.is_trained:
+        agent.save_model()
+    history["real_training"] = agent.is_trained
+    history["backend"] = agent.backend
+    history["checkpoint"] = "dqn_policy.npz" if agent.is_trained else None
+
+    history_file = output_path / "dqn_training_history.json"
     with open(history_file, "w") as f:
         json.dump(history, f, indent=2)
         
-    print(f"\nTraining completed! Training telemetry saved to: {history_file}")
+    print(f"\nTraining completed! Checkpoint and telemetry saved to: {output_path}")
     return history
 
 if __name__ == "__main__":

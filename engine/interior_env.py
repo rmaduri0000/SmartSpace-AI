@@ -34,7 +34,7 @@ class InteriorEnv:
         dims = self.room_config.get("dimensions", {})
         self.room_w = float(dims.get("width", self.room_config.get("room_width", 4.8)))
         self.room_l = float(dims.get("length", self.room_config.get("room_length", 4.0)))
-        self.budget = float(self.room_config.get("budget", 4000.0))
+        self.budget = float(self.room_config.get("budget", 40000.0))
         self.door = self.room_config.get("door", {"wall": "south", "offset": 0.8, "width": 0.9})
         self.windows = self.room_config.get("windows", [{"wall": "north", "offset": 1.5, "width": 1.5}])
         
@@ -98,11 +98,11 @@ class InteriorEnv:
                 "type": f_type,
                 "x": float(item.get("x", self.room_w / 2.0)),
                 "y": float(item.get("y", self.room_l / 2.0)),
-                "width": float(specs["width"]),
-                "depth": float(specs["depth"]),
-                "height": float(specs["height"]),
+                "width": float(item.get("width", specs["width"])),
+                "depth": float(item.get("depth", specs["depth"])),
+                "height": float(item.get("height", specs["height"])),
                 "rotation": int(item.get("rotation", 0)) % 360,
-                "cost": float(specs["base_cost"]),
+                "cost": float(item.get("cost", specs["base_cost"])),
                 "preferred_wall": specs.get("preferred_wall", False)
             }
             self.furniture.append(f_item)

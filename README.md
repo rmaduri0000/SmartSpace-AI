@@ -1,6 +1,6 @@
 # SmartSpace AI: Vision-Driven DQN Interior Layout Optimization Platform
 
-SmartSpace AI is an end-to-end intelligent interior design system that bridges **Computer Vision (YOLO)** and **Reinforcement Learning (Deep Q-Network - DQN)**. It automatically interprets room architecture and existing objects from photographs and generates optimized furniture layouts adhering to ergonomic design standards, circulation aisles, daylight access, and budget constraints.
+SmartSpace AI is an interior planning website with a shared design flow, interactive floorplan studio, room evaluation, and layout optimization. Real furniture detection requires trained YOLO weights; when those weights are absent the studio labels photo detection as unavailable and uses a recommended starter layout. The layout optimizer uses a trained DQN checkpoint when present and otherwise performs deterministic spatial search.
 
 ---
 
@@ -44,16 +44,16 @@ The computer vision front-end is specifically tuned for 10 interior categories:
 
 | ID | Class | Real-World Dim (W × D × H) | Clearance | Base Cost | Wall Preference |
 |:--:|:------|:---------------------------|:----------|:----------|:----------------|
-| **0** | `bed` | 1.6m × 2.0m × 0.8m | 0.8m front | $650 | Back to wall |
-| **1** | `sofa` | 2.1m × 0.9m × 0.85m | 0.9m front | $850 | Flexible |
-| **2** | `chair` | 0.6m × 0.6m × 0.85m | 0.5m front | $120 | Flexible |
-| **3** | `table` | 1.4m × 0.8m × 0.75m | 0.7m sides | $320 | Flexible |
-| **4** | `wardrobe` | 1.5m × 0.6m × 2.1m | 0.9m front | $750 | Back to wall |
-| **5** | `desk` | 1.3m × 0.65m × 0.75m | 0.8m front | $280 | Lateral/Back to wall |
-| **6** | `tv` | 1.2m × 0.15m × 0.7m | 1.8m front | $500 | Wall mounted/console |
-| **7** | `cabinet` | 1.0m × 0.45m × 0.9m | 0.7m front | $340 | Back to wall |
-| **8** | `door` | 0.9m × 0.15m × 2.1m | 1.0m swing | $150 | Perimeter wall |
-| **9** | `window` | 1.4m × 0.15m × 1.2m | 0.6m light | $250 | Perimeter wall |
+| **0** | `bed` | 1.6m × 2.0m × 0.8m | 0.8m front | ₹12,000 | Back to wall |
+| **1** | `sofa` | 2.1m × 0.9m × 0.85m | 0.9m front | ₹14,000 | Flexible |
+| **2** | `chair` | 0.6m × 0.6m × 0.85m | 0.5m front | ₹1,500 | Flexible |
+| **3** | `table` | 1.4m × 0.8m × 0.75m | 0.7m sides | ₹3,500 | Flexible |
+| **4** | `wardrobe` | 1.5m × 0.6m × 2.1m | 0.9m front | ₹8,500 | Back to wall |
+| **5** | `desk` | 1.3m × 0.65m × 0.75m | 0.8m front | ₹4,200 | Lateral/Back to wall |
+| **6** | `tv` | 1.2m × 0.15m × 0.7m | 1.8m front | ₹8,000 | Wall mounted/console |
+| **7** | `cabinet` | 1.0m × 0.45m × 0.9m | 0.7m front | ₹3,500 | Back to wall |
+| **8** | `door` | 0.9m × 0.15m × 2.1m | 1.0m swing | — | Perimeter wall |
+| **9** | `window` | 1.4m × 0.15m × 1.2m | 0.6m light | — | Perimeter wall |
 
 ---
 
@@ -64,6 +64,8 @@ Ensure Python 3.10+ is installed:
 ```bash
 pip install -r requirements.txt
 ```
+
+The standard install does not include a trained detector. Add a compatible `yolo_interior.pt` or `yolo_interior.onnx` file under `data/models` to enable photo detections. ONNX inference also needs `onnxruntime`. Training YOLO requires `ultralytics` and `torch`.
 
 ### 2. Launch the Studio Web Interface
 ```bash
@@ -96,13 +98,13 @@ python vision/dataset_tools/remap_dataset.py --src-labels path/to/raw --dst-labe
 ```bash
 python vision/dataset_tools/train_yolo.py --data data/yolo_dataset/data.yaml --epochs 50
 ```
-Trains YOLO11 using `yolo11n.yaml` (random initialization) and exports weights to `best.pt` and `best.onnx`.
+Trains YOLO11 using `yolo11n.yaml` (random initialization), installs `yolo_interior.pt` and `yolo_interior.onnx` under `data/models`, and writes telemetry from the actual training run. The dataset YAML uses paths relative to its own folder.
 
 ### 5. Train the DQN Layout Agent
 ```bash
 python engine/train_dqn.py --episodes 50 --steps 30
 ```
-Optimizes the Deep Q-Network across spatial layouts with multi-objective rewards.
+Trains the Deep Q-Network with multi-objective rewards, then saves `dqn_policy.npz` and training history under `data/models`. The NumPy fallback trains with mini-batch backpropagation as well.
 
 ---
 

@@ -9,7 +9,7 @@ import base64
 from typing import Dict, Any, List, Tuple
 from PIL import Image, ImageDraw, ImageFont
 
-from config import TARGET_CLASSES, FURNITURE_SPECS, CLASS_COLORS
+from config import FURNITURE_SPECS, CLASS_COLORS
 from vision.yolo_model import YOLOInteriorDetector
 
 class VisionStateExtractor:
@@ -20,7 +20,7 @@ class VisionStateExtractor:
     def __init__(self, model_path: str = "data/models/yolo_interior.pt"):
         self.detector = YOLOInteriorDetector(model_path)
         
-    def process_room_image(self, image_input) -> Dict[str, Any]:
+    def process_room_image(self, image_input, room_dimensions: Dict[str, float] = None) -> Dict[str, Any]:
         """
         Accepts PIL.Image, file path, or bytes.
         Returns:
@@ -42,6 +42,9 @@ class VisionStateExtractor:
             img = Image.open(io.BytesIO(image_input)).convert("RGB")
         else:
             img = image_input.convert("RGB")
+
+        # Keep inference responsive and the studio's persisted preview compact.
+        img.thumbnail((1600, 1200), Image.Resampling.LANCZOS)
             
         img_w, img_h = img.size
         
@@ -69,27 +72,33 @@ class VisionStateExtractor:
             
         # Convert annotated image to Base64
         buffered = io.BytesIO()
-        annotated_img.save(buffered, format="JPEG", quality=88)
+        annotated_img.save(buffered, format="JPEG", quality=78, optimize=True)
         img_b64 = "data:image/jpeg;base64," + base64.b64encode(buffered.getvalue()).decode("utf-8")
         
         # 3. Convert detections to Quantified Room State for DQN
-        room_state = self._convert_detections_to_room_state(detections)
+        room_state = self._convert_detections_to_room_state(detections, room_dimensions)
         
         return {
             "success": True,
             "detected_count": len(detections),
             "detections": detections,
             "annotated_image": img_b64,
-            "room_state": room_state
+            "room_state": room_state,
+            "model_available": self.detector.available,
+            "model_backend": self.detector.engine_type,
+            "model_name": self.detector.model_path.name
         }
 
-    def _convert_detections_to_room_state(self, detections: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _convert_detections_to_room_state(self, detections: List[Dict[str, Any]],
+                                          room_dimensions: Dict[str, float] = None) -> Dict[str, Any]:
         """
         Maps image detections to real-world metric space (meters)
         Default room dimensions: 4.8m width x 4.0m length
         """
-        room_w = 4.8
-        room_l = 4.0
+        room_dimensions = room_dimensions or {}
+        room_w = max(1.0, float(room_dimensions.get("width", 4.8)))
+        room_l = max(1.0, float(room_dimensions.get("length", 4.0)))
+        room_h = max(2.0, float(room_dimensions.get("height", 2.8)))
         
         door_info = {"wall": "south", "offset": 0.8, "width": 0.9}
         windows = []
@@ -148,9 +157,9 @@ class VisionStateExtractor:
             
         return {
             "room_type": "detected_room",
-            "dimensions": {"width": room_w, "length": room_l, "height": 2.8},
+            "dimensions": {"width": room_w, "length": room_l, "height": room_h},
             "door": door_info,
             "windows": windows,
             "initial_furniture": furniture,
-            "budget": 3500.0
+            "budget": 35000.0
         }

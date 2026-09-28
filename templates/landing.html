@@ -4,34 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Plan a more thoughtful home with SmartSpace AI. Explore room ideas, optimize furniture layouts and design around your budget.">
 
     <title>SmartSpace AI | Interior Design</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+          href="{{ url_for('static', filename='css/style.css', v='20260928-consistency') }}">
 </head>
 
-<body class="interior-home">
+<body class="site-page page-home">
 
     <!-- =====================================================
          NAVIGATION
     ====================================================== -->
 
-    <nav class="interior-menu">
-
-        <a href="/" class="menu-active">Home</a>
-
-        <a href="#styles">Styles</a>
-
-        <a href="#what-if">AI Planner</a>
-
-        <a href="#day-night">Lighting</a>
-
-        <a href="#how-it-works">How It Works</a>
-
-        <a href="#about">About</a>
-
-    </nav>
+    {% include "_site_header.html" %}
 
 
     <!-- =====================================================
@@ -573,9 +560,9 @@
                 </div>
 
 
-                <button class="simulation-button">
-                    Apply AI Recommendation →
-                </button>
+                <a href="/create-project" class="simulation-button">
+                    Try a room layout <span>→</span>
+                </a>
 
             </div>
 
@@ -739,9 +726,9 @@
                 </div>
 
 
-                <button class="lighting-button">
-                    Optimize Lighting →
-                </button>
+                <a href="/create-project" class="lighting-button">
+                    Plan your room lighting <span>→</span>
+                </a>
 
             </div>
 
@@ -833,37 +820,14 @@
          FOOTER
     ====================================================== -->
 
-    <footer class="interior-footer">
-
-        <div class="footer-logo">
-
-            <div class="logo-box">
-                S
-            </div>
-
-            <strong>
-                SmartSpace AI
-            </strong>
-
-        </div>
-
-        <p>
-            Intelligent interior design,
-            personalized for you.
-        </p>
-
-        <span>
-            © 2026 SmartSpace AI
-        </span>
-
-    </footer>
+    {% include "_site_footer.html" %}
 
 
     <!-- =====================================================
          LIGHTING JAVASCRIPT
     ====================================================== -->
 
-    <script src="{{ url_for('static', filename='js/lighting.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lighting.js', v='20260928-consistency') }}"></script>
 
 </body>
 

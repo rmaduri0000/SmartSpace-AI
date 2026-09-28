@@ -37,56 +37,56 @@ CLASS_COLORS = {
 }
 
 # Standard real-world physical furniture specifications (Width x Depth x Height in meters)
-# and base estimated retail cost (in USD)
+# and estimated retail cost (in Indian rupees)
 FURNITURE_SPECS: Dict[str, Dict[str, Any]] = {
     "bed": {
         "width": 1.6, "depth": 2.0, "height": 0.8,
-        "base_cost": 650, "clearance_front": 0.8, "clearance_sides": 0.6,
+        "base_cost": 12000, "clearance_front": 0.8, "clearance_sides": 0.6,
         "category": "furniture", "preferred_wall": True, "label": "Queen Bed"
     },
     "sofa": {
         "width": 2.1, "depth": 0.9, "height": 0.85,
-        "base_cost": 850, "clearance_front": 0.9, "clearance_sides": 0.3,
+        "base_cost": 14000, "clearance_front": 0.9, "clearance_sides": 0.3,
         "category": "furniture", "preferred_wall": False, "label": "3-Seater Sofa"
     },
     "chair": {
         "width": 0.6, "depth": 0.6, "height": 0.85,
-        "base_cost": 120, "clearance_front": 0.5, "clearance_sides": 0.2,
+        "base_cost": 1500, "clearance_front": 0.5, "clearance_sides": 0.2,
         "category": "furniture", "preferred_wall": False, "label": "Accent / Dining Chair"
     },
     "table": {
         "width": 1.4, "depth": 0.8, "height": 0.75,
-        "base_cost": 320, "clearance_front": 0.7, "clearance_sides": 0.7,
+        "base_cost": 3500, "clearance_front": 0.7, "clearance_sides": 0.7,
         "category": "furniture", "preferred_wall": False, "label": "Dining / Coffee Table"
     },
     "wardrobe": {
         "width": 1.5, "depth": 0.6, "height": 2.1,
-        "base_cost": 750, "clearance_front": 0.9, "clearance_sides": 0.2,
+        "base_cost": 8500, "clearance_front": 0.9, "clearance_sides": 0.2,
         "category": "furniture", "preferred_wall": True, "label": "2-Door Wardrobe"
     },
     "desk": {
         "width": 1.3, "depth": 0.65, "height": 0.75,
-        "base_cost": 280, "clearance_front": 0.8, "clearance_sides": 0.3,
+        "base_cost": 4200, "clearance_front": 0.8, "clearance_sides": 0.3,
         "category": "furniture", "preferred_wall": True, "label": "Study / Work Desk"
     },
     "tv": {
         "width": 1.2, "depth": 0.15, "height": 0.7,
-        "base_cost": 500, "clearance_front": 1.8, "clearance_sides": 0.2,
+        "base_cost": 8000, "clearance_front": 1.8, "clearance_sides": 0.2,
         "category": "electronics", "preferred_wall": True, "label": "55\" Wall / Console TV"
     },
     "cabinet": {
         "width": 1.0, "depth": 0.45, "height": 0.9,
-        "base_cost": 340, "clearance_front": 0.7, "clearance_sides": 0.2,
+        "base_cost": 3500, "clearance_front": 0.7, "clearance_sides": 0.2,
         "category": "furniture", "preferred_wall": True, "label": "Side Storage Cabinet"
     },
     "door": {
         "width": 0.9, "depth": 0.15, "height": 2.1,
-        "base_cost": 150, "clearance_front": 1.0, "clearance_sides": 0.2,
+        "base_cost": 0, "clearance_front": 1.0, "clearance_sides": 0.2,
         "category": "architectural", "preferred_wall": True, "label": "Entry Door"
     },
     "window": {
         "width": 1.4, "depth": 0.15, "height": 1.2,
-        "base_cost": 250, "clearance_front": 0.6, "clearance_sides": 0.2,
+        "base_cost": 0, "clearance_front": 0.6, "clearance_sides": 0.2,
         "category": "architectural", "preferred_wall": True, "label": "Window (Natural Light)"
     }
 }
@@ -114,7 +114,7 @@ SAMPLE_ROOMS = {
         "name": "Contemporary Master Bedroom",
         "room_type": "bedroom",
         "dimensions": {"width": 4.8, "length": 4.0, "height": 2.8},
-        "budget": 3500,
+        "budget": 35000,
         "door": {"wall": "south", "offset": 0.8, "width": 0.9},
         "windows": [{"wall": "north", "offset": 1.8, "width": 1.6}],
         "initial_furniture": [
@@ -130,7 +130,7 @@ SAMPLE_ROOMS = {
         "name": "Urban Studio Living Room",
         "room_type": "living_room",
         "dimensions": {"width": 5.4, "length": 4.5, "height": 2.8},
-        "budget": 4200,
+        "budget": 42000,
         "door": {"wall": "west", "offset": 0.6, "width": 0.9},
         "windows": [{"wall": "east", "offset": 1.5, "width": 2.0}],
         "initial_furniture": [
@@ -147,7 +147,7 @@ SAMPLE_ROOMS = {
         "name": "Minimalist Executive Office",
         "room_type": "office",
         "dimensions": {"width": 4.2, "length": 3.6, "height": 2.7},
-        "budget": 2800,
+        "budget": 28000,
         "door": {"wall": "south", "offset": 0.5, "width": 0.9},
         "windows": [{"wall": "west", "offset": 1.0, "width": 1.5}],
         "initial_furniture": [

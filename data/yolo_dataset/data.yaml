@@ -1,7 +1,7 @@
 # SmartSpace AI - Interior Object Detection Dataset
 # 10 Specialized Interior Object Classes
 
-path: C:/Users/Swaraj/Downloads/New folder/data/yolo_dataset
+path: .
 train: images/train
 val: images/val
 test: images/test

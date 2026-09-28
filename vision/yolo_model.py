@@ -1,164 +1,199 @@
-"""
-YOLO Model Inference Wrapper for SmartSpace AI
-Supports Ultralytics PyTorch weights (.pt), ONNX Runtime (.onnx),
-and an intelligent multi-cue computer vision fallback for instant out-of-the-box demo.
-"""
-import os
-import sys
-from typing import List, Dict, Any, Tuple
+"""YOLO inference for interior objects using Ultralytics or ONNX Runtime."""
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 from PIL import Image
 
-# Add parent directory
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from config import TARGET_CLASSES, CLASS_TO_IDX, IDX_TO_CLASS
+from config import TARGET_CLASSES
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
 
 class YOLOInteriorDetector:
-    """
-    Inference manager for the 10 interior object classes.
-    """
-    def __init__(self, model_path: str = "data/models/yolo_interior.pt"):
-        self.model_path = model_path
+    """Loads real model weights and returns detections in original-image space."""
+
+    def __init__(self, model_path: Optional[str] = None):
+        requested = Path(model_path) if model_path else Path("data/models/yolo_interior.pt")
+        self.model_path = requested if requested.is_absolute() else PROJECT_ROOT / requested
         self.classes = TARGET_CLASSES
         self.loaded_model = None
-        self.engine_type = "fallback"
-        
+        self.engine_type = "unavailable"
+        self.available = False
+        self.input_size = (640, 640)
         self._initialize_backend()
-        
-    def _initialize_backend(self):
-        """Attempts to load Ultralytics or ONNX model if weights exist."""
-        if os.path.exists(self.model_path):
-            try:
-                from ultralytics import YOLO
-                self.loaded_model = YOLO(self.model_path)
-                self.engine_type = "ultralytics"
-                print(f"[YOLO] Successfully loaded model weights: {self.model_path}")
-                return
-            except Exception as e:
-                print(f"[YOLO] Failed to load with ultralytics ({e}), checking ONNX...")
-                
-        onnx_path = self.model_path.replace(".pt", ".onnx")
-        if os.path.exists(onnx_path):
-            try:
-                import onnxruntime as ort
-                self.loaded_model = ort.InferenceSession(onnx_path)
-                self.engine_type = "onnx"
-                print(f"[YOLO] Successfully loaded ONNX model: {onnx_path}")
-                return
-            except Exception as e:
-                print(f"[YOLO] Failed to load ONNX ({e})")
-                
-        print("[YOLO] Operating with Built-In Intelligent Interior Vision Analyzer.")
-        self.engine_type = "vision_analyzer"
+
+    def _initialize_backend(self) -> None:
+        """Load the first usable supported checkpoint; absence is an explicit state."""
+        candidates = [self.model_path]
+        onnx_path = self.model_path.with_suffix(".onnx")
+        if onnx_path not in candidates:
+            candidates.append(onnx_path)
+
+        for path in candidates:
+            if not path.is_file():
+                continue
+            if path.suffix.lower() == ".pt":
+                try:
+                    from ultralytics import YOLO
+                    self.loaded_model = YOLO(str(path))
+                    self.engine_type = "ultralytics"
+                    self.available = True
+                    self.model_path = path
+                    print(f"[YOLO] Loaded weights: {path.name}")
+                    return
+                except Exception as error:
+                    print(f"[YOLO] Could not load {path.name}: {error}")
+            elif path.suffix.lower() == ".onnx":
+                try:
+                    import onnxruntime as ort
+                    self.loaded_model = ort.InferenceSession(
+                        str(path), providers=ort.get_available_providers()
+                    )
+                    input_shape = self.loaded_model.get_inputs()[0].shape
+                    if len(input_shape) == 4:
+                        height, width = input_shape[-2:]
+                        self.input_size = (
+                            int(width) if isinstance(width, int) else 640,
+                            int(height) if isinstance(height, int) else 640,
+                        )
+                    self.engine_type = "onnx"
+                    self.available = True
+                    self.model_path = path
+                    print(f"[YOLO] Loaded ONNX weights: {path.name}")
+                    return
+                except Exception as error:
+                    print(f"[YOLO] Could not load {path.name}: {error}")
+
+        print(f"[YOLO] No supported weights found at {self.model_path} or {onnx_path}")
 
     def predict(self, image: Image.Image, conf_threshold: float = 0.25) -> List[Dict[str, Any]]:
-        """
-        Runs object detection on the image.
-        Returns a list of detected objects:
-        [
-          {
-            "class_id": int,
-            "class_name": str,
-            "confidence": float,
-            "bbox_xyxy": [x1, y1, x2, y2], (absolute pixels)
-            "bbox_norm": [cx, cy, w, h]     (normalized 0..1)
-          }, ...
-        ]
-        """
-        img_w, img_h = image.size
-        
-        # If Ultralytics model is loaded
-        if self.engine_type == "ultralytics" and self.loaded_model:
-            results = self.loaded_model(image, conf=conf_threshold)[0]
+        """Run detection. Returns an empty list when no real model is available."""
+        if not self.available or self.loaded_model is None:
+            return []
+        image = image.convert("RGB")
+        if self.engine_type == "ultralytics":
+            results = self.loaded_model(image, conf=conf_threshold, verbose=False)[0]
             detections = []
             for box in results.boxes:
                 cls_id = int(box.cls[0].item())
-                conf = float(box.conf[0].item())
-                xyxy = [float(v) for v in box.xyxy[0].tolist()]
-                
-                # Compute normalized cx, cy, w, h
-                cx = ((xyxy[0] + xyxy[2]) / 2.0) / img_w
-                cy = ((xyxy[1] + xyxy[3]) / 2.0) / img_h
-                w = (xyxy[2] - xyxy[0]) / img_w
-                h = (xyxy[3] - xyxy[1]) / img_h
-                
-                cls_name = self.classes[cls_id] if cls_id < len(self.classes) else f"class_{cls_id}"
-                detections.append({
-                    "class_id": cls_id,
-                    "class_name": cls_name,
-                    "confidence": round(conf, 3),
-                    "bbox_xyxy": [round(v, 1) for v in xyxy],
-                    "bbox_norm": [round(cx, 4), round(cy, 4), round(w, 4), round(h, 4)]
-                })
+                confidence = float(box.conf[0].item())
+                xyxy = [float(value) for value in box.xyxy[0].tolist()]
+                detections.append(self._format_detection(cls_id, confidence, xyxy, image.size))
             return detections
-            
-        # Built-in Vision Analyzer (detects color regions, shapes, and layout features)
-        return self._analyze_image_features(image)
+        if self.engine_type == "onnx":
+            return self._predict_onnx(image, conf_threshold)
+        return []
 
-    def _analyze_image_features(self, image: Image.Image) -> List[Dict[str, Any]]:
-        """
-        Computer vision feature analyzer that scans room images
-        to detect interior furniture clusters, doors, and windows.
-        """
-        img_w, img_h = image.size
-        rgb_img = image.convert("RGB")
-        
-        # Convert to numpy array for image processing
-        arr = np.array(rgb_img)
-        
-        detections = []
-        
-        # Heuristic segmentation by color clusters and spatial positions
-        # Check image top (windows/doors/walls), middle (sofas/beds/tables), sides (wardrobe/desk)
-        # Sample detection layout matching common bedroom/living arrangements
-        # If image appears to be a bedroom (e.g. large central structure)
-        
-        # Bed or Sofa in center-bottom
-        cx1, cy1, w1, h1 = 0.50, 0.58, 0.42, 0.46
-        detections.append({
-            "class_id": 0, "class_name": "bed", "confidence": 0.94,
-            "bbox_xyxy": [int((cx1 - w1/2)*img_w), int((cy1 - h1/2)*img_h), int((cx1 + w1/2)*img_w), int((cy1 + h1/2)*img_h)],
-            "bbox_norm": [cx1, cy1, w1, h1]
-        })
-        
-        # Wardrobe on right wall
-        cx2, cy2, w2, h2 = 0.84, 0.40, 0.24, 0.45
-        detections.append({
-            "class_id": 4, "class_name": "wardrobe", "confidence": 0.91,
-            "bbox_xyxy": [int((cx2 - w2/2)*img_w), int((cy2 - h2/2)*img_h), int((cx2 + w2/2)*img_w), int((cy2 + h2/2)*img_h)],
-            "bbox_norm": [cx2, cy2, w2, h2]
-        })
-        
-        # Desk on left wall
-        cx3, cy3, w3, h3 = 0.18, 0.45, 0.22, 0.28
-        detections.append({
-            "class_id": 5, "class_name": "desk", "confidence": 0.89,
-            "bbox_xyxy": [int((cx3 - w3/2)*img_w), int((cy3 - h3/2)*img_h), int((cx3 + w3/2)*img_w), int((cy3 + h3/2)*img_h)],
-            "bbox_norm": [cx3, cy3, w3, h3]
-        })
-        
-        # Chair next to desk
-        cx4, cy4, w4, h4 = 0.22, 0.65, 0.12, 0.16
-        detections.append({
-            "class_id": 2, "class_name": "chair", "confidence": 0.87,
-            "bbox_xyxy": [int((cx4 - w4/2)*img_w), int((cy4 - h4/2)*img_h), int((cx4 + w4/2)*img_w), int((cy4 + h4/2)*img_h)],
-            "bbox_norm": [cx4, cy4, w4, h4]
-        })
-        
-        # Window in background / upper wall
-        cx5, cy5, w5, h5 = 0.48, 0.16, 0.32, 0.22
-        detections.append({
-            "class_id": 9, "class_name": "window", "confidence": 0.96,
-            "bbox_xyxy": [int((cx5 - w5/2)*img_w), int((cy5 - h5/2)*img_h), int((cx5 + w5/2)*img_w), int((cy5 + h5/2)*img_h)],
-            "bbox_norm": [cx5, cy5, w5, h5]
-        })
-        
-        # Door entrance
-        cx6, cy6, w6, h6 = 0.10, 0.82, 0.14, 0.26
-        detections.append({
-            "class_id": 8, "class_name": "door", "confidence": 0.92,
-            "bbox_xyxy": [int((cx6 - w6/2)*img_w), int((cy6 - h6/2)*img_h), int((cx6 + w6/2)*img_w), int((cy6 + h6/2)*img_h)],
-            "bbox_norm": [cx6, cy6, w6, h6]
-        })
-        
-        return detections
+    def _predict_onnx(self, image: Image.Image, conf_threshold: float) -> List[Dict[str, Any]]:
+        input_w, input_h = self.input_size
+        original_w, original_h = image.size
+        scale = min(input_w / original_w, input_h / original_h)
+        resized_w, resized_h = int(round(original_w * scale)), int(round(original_h * scale))
+        resized = image.resize((resized_w, resized_h), Image.Resampling.BILINEAR)
+        canvas = Image.new("RGB", (input_w, input_h), (114, 114, 114))
+        pad_x, pad_y = (input_w - resized_w) // 2, (input_h - resized_h) // 2
+        canvas.paste(resized, (pad_x, pad_y))
+
+        tensor = np.asarray(canvas, dtype=np.float32) / 255.0
+        tensor = np.transpose(tensor, (2, 0, 1))[None, ...]
+        input_meta = self.loaded_model.get_inputs()[0]
+        raw_outputs = self.loaded_model.run(None, {input_meta.name: tensor})
+        if not raw_outputs:
+            return []
+        rows = self._output_rows(np.asarray(raw_outputs[0]))
+        if rows.size == 0:
+            return []
+
+        boxes: List[List[float]] = []
+        scores: List[float] = []
+        class_ids: List[int] = []
+        for row in rows:
+            if row.size == 6:  # Exported with NMS: x1, y1, x2, y2, confidence, class.
+                x1, y1, x2, y2, confidence, class_id = row.tolist()
+                cls_id = int(class_id)
+            else:
+                # Standard YOLOv8/11 output has cx, cy, w, h and class scores;
+                # YOLOv5 also includes an objectness column.
+                if row.size < 5:
+                    continue
+                cx, cy, width, height = row[:4]
+                class_scores = row[4:]
+                if class_scores.size == len(self.classes) + 1:
+                    objectness = float(class_scores[0])
+                    class_scores = class_scores[1:] * objectness
+                cls_id = int(np.argmax(class_scores))
+                confidence = float(class_scores[cls_id])
+                x1, y1 = cx - width / 2, cy - height / 2
+                x2, y2 = cx + width / 2, cy + height / 2
+            if cls_id < 0 or cls_id >= len(self.classes) or confidence < conf_threshold:
+                continue
+
+            # Some exports return normalized coordinates instead of model pixels.
+            if max(abs(x1), abs(y1), abs(x2), abs(y2)) <= 2.0:
+                x1, x2 = x1 * input_w, x2 * input_w
+                y1, y2 = y1 * input_h, y2 * input_h
+            x1 = max(0.0, min(original_w, (x1 - pad_x) / scale))
+            x2 = max(0.0, min(original_w, (x2 - pad_x) / scale))
+            y1 = max(0.0, min(original_h, (y1 - pad_y) / scale))
+            y2 = max(0.0, min(original_h, (y2 - pad_y) / scale))
+            if x2 <= x1 or y2 <= y1:
+                continue
+            boxes.append([x1, y1, x2, y2])
+            scores.append(float(confidence))
+            class_ids.append(cls_id)
+
+        keep = self._nms(boxes, scores, class_ids, iou_threshold=0.45)
+        return [self._format_detection(class_ids[i], scores[i], boxes[i], image.size) for i in keep]
+
+    @staticmethod
+    def _output_rows(output: np.ndarray) -> np.ndarray:
+        output = np.squeeze(output)
+        if output.ndim == 1:
+            output = output[None, :]
+        if output.ndim != 2:
+            return np.empty((0, 0), dtype=np.float32)
+        # YOLO exports commonly use [features, candidates]. Transpose that form.
+        if output.shape[0] in (6, 14, 15) and output.shape[1] > output.shape[0]:
+            output = output.T
+        return output.astype(np.float32, copy=False)
+
+    @staticmethod
+    def _nms(boxes: List[List[float]], scores: List[float], class_ids: List[int],
+             iou_threshold: float) -> List[int]:
+        kept: List[int] = []
+        for cls_id in set(class_ids):
+            order = sorted((i for i, cls in enumerate(class_ids) if cls == cls_id),
+                           key=lambda i: scores[i], reverse=True)
+            while order:
+                current = order.pop(0)
+                kept.append(current)
+                x1, y1, x2, y2 = boxes[current]
+                area = max(0.0, x2 - x1) * max(0.0, y2 - y1)
+                remaining = []
+                for idx in order:
+                    ox1, oy1, ox2, oy2 = boxes[idx]
+                    iw = max(0.0, min(x2, ox2) - max(x1, ox1))
+                    ih = max(0.0, min(y2, oy2) - max(y1, oy1))
+                    intersection = iw * ih
+                    other_area = max(0.0, ox2 - ox1) * max(0.0, oy2 - oy1)
+                    union = area + other_area - intersection
+                    if union <= 0 or intersection / union <= iou_threshold:
+                        remaining.append(idx)
+                order = remaining
+        return sorted(kept, key=lambda i: scores[i], reverse=True)
+
+    def _format_detection(self, cls_id: int, confidence: float, xyxy: List[float],
+                          image_size: Tuple[int, int]) -> Dict[str, Any]:
+        img_w, img_h = image_size
+        x1, y1, x2, y2 = xyxy
+        cx, cy = (x1 + x2) / 2 / img_w, (y1 + y2) / 2 / img_h
+        width, height = (x2 - x1) / img_w, (y2 - y1) / img_h
+        return {
+            "class_id": cls_id,
+            "class_name": self.classes[cls_id],
+            "confidence": round(float(confidence), 3),
+            "bbox_xyxy": [round(float(value), 1) for value in xyxy],
+            "bbox_norm": [round(float(value), 4) for value in (cx, cy, width, height)],
+        }

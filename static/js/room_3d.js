@@ -11,6 +11,8 @@ class Room3DViewer {
     this.camera = null;
     this.renderer = null;
     this.controls = null;
+    this.available = false;
+    this.fallback = document.getElementById('threejsFallback');
     
     this.furnitureMeshes = [];
     this.roomMeshes = [];
@@ -33,13 +35,13 @@ class Room3DViewer {
   }
 
   init() {
-    if (!window.THREE) {
-      console.warn('Three.js not yet loaded');
+    if (!window.THREE || !this.container) {
       return;
     }
 
-    const width = this.container.clientWidth || 700;
-    const height = this.container.clientHeight || 550;
+    try {
+      const width = this.container.clientWidth || 700;
+      const height = this.container.clientHeight || 550;
 
     // Scene
     this.scene = new THREE.Scene();
@@ -57,6 +59,8 @@ class Room3DViewer {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.container.appendChild(this.renderer.domElement);
+    this.available = true;
+    if (this.fallback) this.fallback.hidden = true;
 
     // OrbitControls
     if (window.THREE.OrbitControls) {
@@ -76,6 +80,14 @@ class Room3DViewer {
     // Animation Loop
     this.animate = this.animate.bind(this);
     requestAnimationFrame(this.animate);
+    } catch (error) {
+      console.warn('3D preview could not initialize:', error);
+      this.available = false;
+    }
+  }
+
+  showFallback() {
+    if (this.fallback) this.fallback.hidden = false;
   }
 
   setupLighting() {
@@ -116,15 +128,15 @@ class Room3DViewer {
   }
 
   updateLayout(layoutData) {
-    if (!this.scene || !layoutData) return;
+    if (!this.available || !this.scene || !layoutData) return;
     this.layoutData = layoutData;
 
     // Clear previous room & furniture meshes
     this.clearMeshes();
 
-    const roomW = layoutData.room_width || 4.8;
-    const roomL = layoutData.room_length || 4.0;
-    const roomH = 2.7;
+    const roomW = layoutData.room_width || layoutData.dimensions?.width || 4.8;
+    const roomL = layoutData.room_length || layoutData.dimensions?.length || 4.0;
+    const roomH = layoutData.dimensions?.height || 2.7;
 
     // 1. Build Floor
     const floorGeo = new THREE.PlaneGeometry(roomW, roomL);
@@ -148,7 +160,7 @@ class Room3DViewer {
     this.roomMeshes.push(bSouth);
 
     // 2. Build 3D Furniture Items
-    const furniture = layoutData.furniture || [];
+    const furniture = layoutData.furniture || layoutData.initial_furniture || [];
     furniture.forEach(item => {
       const mesh = this.createFurniture3D(item, roomW, roomL);
       if (mesh) {

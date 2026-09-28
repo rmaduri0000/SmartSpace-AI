@@ -8,8 +8,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   let floorplanCanvas = null;
   let room3D = null;
-  let trainingCharts = null;
-
   let currentLayout = null;
   let currentViewMode = '2d';
   let isOptimizing = false;
@@ -22,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportSpecBtn = document.getElementById('exportSpecBtn');
   const exportPngBtn = document.getElementById('exportPngBtn');
   const actionLog = document.getElementById('actionLog');
+  const detectedThumbImg = document.getElementById('detectedThumbImg');
 
   // Metric Displays
   const metricScore = document.getElementById('metricScore');
@@ -45,13 +44,105 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   room3D = new Room3DViewer('threejsContainer');
-  trainingCharts = new TrainingCharts('dqnTrainingChart', 'yoloTrainingChart');
+
+  function setActionLog(label, message, tone = 'cyan') {
+    if (!actionLog) return;
+    actionLog.replaceChildren();
+    const badge = document.createElement('span');
+    badge.className = `badge ${tone}`;
+    badge.textContent = label;
+    actionLog.append(badge, document.createTextNode(` ${message}`));
+  }
+
+  function mergeRoomLayout(layout) {
+    const previous = currentLayout || {};
+    return {
+      ...previous,
+      ...layout,
+      name: layout?.name || previous.name,
+      style: layout?.style || previous.style,
+      annotated_image: layout?.annotated_image || previous.annotated_image,
+      projectId: layout?.projectId || previous.projectId,
+      projectName: layout?.projectName || previous.projectName
+    };
+  }
+
+  function persistStudioLayout() {
+    try {
+      localStorage.setItem('smartspace_studio_layout', JSON.stringify(currentLayout));
+    } catch (error) {
+      const compactLayout = { ...currentLayout };
+      delete compactLayout.annotated_image;
+      try {
+        localStorage.setItem('smartspace_studio_layout', JSON.stringify(compactLayout));
+      } catch (storageError) {
+        console.warn('This browser could not persist the latest studio layout.', storageError);
+        try {
+          sessionStorage.setItem('smartspace_studio_layout', JSON.stringify(compactLayout));
+        } catch (_sessionError) {
+          // The current editing session remains usable even when browser storage is disabled.
+        }
+      }
+    }
+  }
+
+  function readSavedRoom(key) {
+    try {
+      const localValue = localStorage.getItem(key);
+      if (localValue) return localValue;
+    } catch (_localError) {
+      // Use tab-scoped storage when persistent browser storage is unavailable.
+    }
+    try {
+      return sessionStorage.getItem(key);
+    } catch (_sessionError) {
+      return null;
+    }
+  }
+
+  async function updateSystemStatus() {
+    try {
+      const response = await fetch('/api/system-status');
+      const status = await response.json();
+      if (!response.ok || !status.success) throw new Error('Model status is unavailable.');
+      const vision = status.vision;
+      const optimizer = status.optimizer;
+      const visionText = vision.available ? `Vision · ${vision.backend}` : 'Vision · weights needed';
+      const optimizerText = optimizer.trained
+        ? `Optimizer · trained ${optimizer.backend}`
+        : `Optimizer · spatial search (${optimizer.backend})`;
+      const visionBadge = document.getElementById('visionHeaderBadge');
+      const optimizerBadge = document.getElementById('optimizerHeaderBadge');
+      const optimizerDetail = document.getElementById('optimizerModelBadge');
+      const visionDetail = document.getElementById('visionPreviewStatus');
+      if (visionBadge) visionBadge.textContent = `👁 ${visionText}`;
+      if (optimizerBadge) optimizerBadge.textContent = `🧠 ${optimizerText}`;
+      if (optimizerDetail) optimizerDetail.textContent = optimizer.mode;
+      if (visionDetail) {
+        if (!vision.available && currentLayout?.annotated_image) {
+          visionDetail.textContent = 'Photo saved. Detector weights are missing, so starter furniture is shown.';
+        } else if (vision.available && currentLayout?.annotated_image && !currentLayout.vision_detected_count) {
+          visionDetail.textContent = 'No furniture was detected in this photo. Starter furniture is shown.';
+        } else {
+          visionDetail.textContent = vision.available
+            ? `Real detections · ${vision.backend} model`
+            : 'No detector weights installed. Add data/models/yolo_interior.pt or .onnx to enable photo detections.';
+        }
+        visionDetail.classList.toggle('model-unavailable', !vision.available);
+      }
+    } catch (error) {
+      console.error('Could not load model status:', error);
+      const visionDetail = document.getElementById('visionPreviewStatus');
+      if (visionDetail) visionDetail.textContent = 'Model status could not be loaded.';
+    }
+  }
 
   // -------------------------------------------------------------
   // Load Room Data: Check LocalStorage (from /room-details) First!
   // -------------------------------------------------------------
-  function initializeRoom() {
-    const storedRoom = localStorage.getItem('smartspace_current_room');
+  function initializeRoom(restoreSavedLayout = true) {
+    const storedRoom = (restoreSavedLayout && readSavedRoom('smartspace_studio_layout'))
+      || readSavedRoom('smartspace_current_room');
     if (storedRoom) {
       try {
         const parsed = JSON.parse(storedRoom);
@@ -59,12 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStudioLayout(currentLayout);
         evaluateLayout(currentLayout);
         updateRoomHeaders(currentLayout);
-        if (actionLog) {
-          actionLog.innerHTML = `<span class="badge emerald">LOADED</span> Custom room <b>${currentLayout.name || 'Room'}</b> initialized with local models!`;
-        }
+        setActionLog('READY', `${currentLayout.name || 'Room'} is ready to edit.`, 'emerald');
         return;
       } catch (e) {
         console.error('Failed to parse stored room:', e);
+        try { localStorage.removeItem('smartspace_studio_layout'); } catch (_error) { }
+        try { sessionStorage.removeItem('smartspace_studio_layout'); } catch (_error) { }
       }
     }
     // Fallback if no custom room created yet
@@ -95,22 +186,26 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStudioLayout(currentLayout);
         evaluateLayout(currentLayout);
         updateRoomHeaders(currentLayout);
-        if (actionLog) {
-          actionLog.innerHTML = `<span class="badge cyan">PRESET</span> Loaded <b>${currentLayout.name}</b>`;
-        }
+        setActionLog('PRESET', `Loaded ${currentLayout.name}.`);
       }
     } catch (err) {
       console.error('Failed to load preset:', err);
+      setActionLog('ERROR', 'Could not load the sample room. Refresh and try again.', 'amber');
     }
   }
 
   function updateStudioLayout(layout) {
-    currentLayout = layout;
-    floorplanCanvas.setLayout(layout);
-    if (room3D && currentViewMode === '3d') {
-      room3D.updateLayout(layout);
+    currentLayout = mergeRoomLayout(layout);
+    if (detectedThumbImg && layout.annotated_image) {
+      detectedThumbImg.src = currentLayout.annotated_image;
+      detectedThumbImg.alt = `AI detections for ${layout.name || 'this room'}`;
     }
-    updateInventoryList(layout.furniture || layout.initial_furniture || []);
+    floorplanCanvas.setLayout(currentLayout);
+    currentLayout.furniture = floorplanCanvas.furniture.map(item => ({ ...item }));
+    if (room3D && currentViewMode === '3d') {
+      room3D.updateLayout(currentLayout);
+    }
+    updateInventoryList(currentLayout.furniture);
   }
 
   function updateMetricsUI(metrics) {
@@ -176,7 +271,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function onLayoutManuallyUpdated(newLayout, eventType) {
-    currentLayout = newLayout;
+    currentLayout = mergeRoomLayout(newLayout);
+    persistStudioLayout();
+    updateRoomHeaders(currentLayout);
     if (room3D && currentViewMode === '3d') {
       room3D.updateLayout(currentLayout);
     }
@@ -199,16 +296,22 @@ document.addEventListener('DOMContentLoaded', () => {
       div.className = `inventory-item ${selectedId === item.id ? 'active' : ''}`;
       const color = floorplanCanvas.colorMap[item.type] || '#3b82f6';
       
+      const safeLabel = String(item.label || item.type.toUpperCase()).replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[char]));
+      const safeId = String(item.id).replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[char]));
       div.innerHTML = `
         <div class="item-badge" style="cursor: pointer;">
           <span class="color-dot" style="background-color: ${color}"></span>
-          <span><b>${item.label || item.type.toUpperCase()}</b></span>
+          <span><b>${safeLabel}</b></span>
         </div>
         <div class="item-actions">
           <span class="metric-sub">${(item.width || 1).toFixed(1)}x${(item.depth || 1).toFixed(1)}m</span>
-          <button class="icon-btn rotate-btn" data-id="${item.id}" title="Rotate 90°">↻</button>
-          <button class="icon-btn snap-btn" data-id="${item.id}" title="Snap to Wall">⇄</button>
-          <button class="icon-btn delete-btn" data-id="${item.id}" title="Remove Item" style="color: #f43f5e;">✕</button>
+          <button class="icon-btn rotate-btn" data-id="${safeId}" title="Rotate 90°">↻</button>
+          <button class="icon-btn snap-btn" data-id="${safeId}" title="Snap to Wall">⇄</button>
+          <button class="icon-btn delete-btn" data-id="${safeId}" title="Remove Item">✕</button>
         </div>
       `;
 
@@ -266,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (actionLog) {
-        actionLog.innerHTML = `<span class="badge cyan">ADDED</span> Added <b>${label}</b> to room!`;
+        setActionLog('ADDED', `${label} added to the room.`);
       }
     });
   });
@@ -303,11 +406,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (mode === '2d') {
         canvasElement.style.display = 'block';
         threejsContainer.style.display = 'none';
+        const fallback = document.getElementById('threejsFallback');
+        if (fallback) fallback.hidden = true;
         floorplanCanvas.resizeCanvas();
       } else {
         canvasElement.style.display = 'none';
         threejsContainer.style.display = 'block';
-        if (room3D && currentLayout) {
+        if (room3D && !room3D.available) room3D.showFallback();
+        if (room3D?.available && currentLayout) {
           room3D.onResize();
           room3D.updateLayout(currentLayout);
         }
@@ -323,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isOptimizing || !currentLayout) return;
       isOptimizing = true;
       dqnOptimizeBtn.disabled = true;
-      dqnOptimizeBtn.innerHTML = '<span>⚡ Local DQN AI Thinking...</span>';
+      dqnOptimizeBtn.innerHTML = '<span>Optimizing layout…</span>';
 
       try {
         const res = await fetch('/api/optimize', {
@@ -332,18 +438,25 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify(currentLayout)
         });
         const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'The layout could not be optimized.');
         
         if (data.success && data.trajectory) {
           await playTrajectoryAnimation(data.trajectory);
           updateStudioLayout(data.final_layout);
           updateMetricsUI(data.final_layout.metrics);
+          updateRoomHeaders(currentLayout);
+          persistStudioLayout();
+          setActionLog(data.optimizer_trained ? 'DQN' : 'LAYOUT',
+            data.optimizer_trained ? 'Layout improved with the trained optimizer.' : 'Layout improved with spatial optimization.',
+            'emerald');
         }
       } catch (err) {
         console.error('DQN optimization failed:', err);
+        setActionLog('ERROR', err.message || 'The optimizer is unavailable. Try again.', 'amber');
       } finally {
         isOptimizing = false;
         dqnOptimizeBtn.disabled = false;
-        dqnOptimizeBtn.innerHTML = '<span>⚡ Run DQN Layout AI</span>';
+        dqnOptimizeBtn.innerHTML = '<span>Optimize layout</span>';
       }
     });
   }
@@ -353,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
       updateStudioLayout(frame.layout);
       updateMetricsUI(frame.layout.metrics);
       if (actionLog) {
-        actionLog.innerHTML = `<span class="badge purple">STEP ${frame.step}</span> ${frame.action_desc} (Score: <b>${frame.score}%</b>)`;
+        setActionLog(`STEP ${frame.step}`, `${frame.action_desc} · Score ${frame.score}%`, 'purple');
       }
       await new Promise(r => setTimeout(r, 85));
     }
@@ -362,9 +475,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Reset Layout
   if (resetLayoutBtn) {
     resetLayoutBtn.addEventListener('click', () => {
-      initializeRoom();
+      try { localStorage.removeItem('smartspace_studio_layout'); } catch (_error) { }
+      try { sessionStorage.removeItem('smartspace_studio_layout'); } catch (_error) { }
+      initializeRoom(false);
     });
   }
+
+  updateSystemStatus();
 
   // Export Specification (.txt)
   if (exportSpecBtn) {

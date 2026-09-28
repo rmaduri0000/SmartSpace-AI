@@ -1,30 +1,29 @@
 """
 SmartSpace AI - Main Web Application and REST API Server
 Integrates YOLO Computer Vision with DQN Reinforcement Learning Layout Optimizer.
-Provides multi-page flow matching user screenshots:
+Provides the multi-page design flow:
 - / (Landing Page with 3 Feature Cards & How It Works)
 - /create-project (Project Name, Room Type, Description)
 - /room-details (1. Room Info, 2. Dimensions in ft, 3. Budget in ₹, 4. Preferences, 5. Photo Upload)
 - /studio (Interactive 2D & 3D WebGL Layout Optimization Studio)
-- /docs (Swagger UI API Documentation)
 """
 import os
 import json
-import base64
 import io
 import uuid
-from flask import Flask, render_template, request, jsonify, send_file
-from werkzeug.utils import secure_filename
-from PIL import Image
+from pathlib import Path
+from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
 
-from config import TARGET_CLASSES, CLASS_COLORS, FURNITURE_SPECS, ERGONOMIC_RULES, SAMPLE_ROOMS
+# Keep optional TensorFlow startup quiet before importing the model layer.
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
+os.environ.setdefault("TF_ENABLE_ONEDNN_OPTS", "0")
+
+from config import TARGET_CLASSES, CLASS_COLORS, FURNITURE_SPECS, SAMPLE_ROOMS
 from vision.detector import VisionStateExtractor
 from engine.interior_env import InteriorEnv
 from engine.dqn_agent import DQNAgent
 
-# Suppress noisy TensorFlow oneDNN logs for cleaner console output
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+PROJECT_ROOT = Path(__file__).resolve().parent
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024 # 16 MB upload limit
@@ -43,18 +42,18 @@ ROOMS_STORE = {}
 
 @app.route("/")
 def landing_page():
-    """Renders Landing Page matching Screenshot 4."""
-    return render_template("landing.html")
+    """Renders the SmartSpace overview page."""
+    return render_template("landing.html", page_key="home")
 
 @app.route("/create-project")
 def create_project_page():
-    """Renders Create Project page matching Screenshot 3."""
-    return render_template("create_project.html")
+    """Renders the first step of the room planning flow."""
+    return render_template("create_project.html", page_key="project")
 
 @app.route("/room-details")
 def room_details_page():
-    """Renders Room Details page matching Screenshots 1, 2, 5."""
-    return render_template("room_details.html")
+    """Renders room specifications and upload step."""
+    return render_template("room_details.html", page_key="room")
 
 @app.route("/studio")
 def studio_page():
@@ -64,20 +63,13 @@ def studio_page():
         classes=TARGET_CLASSES,
         colors=CLASS_COLORS,
         specs=FURNITURE_SPECS,
-        sample_rooms=SAMPLE_ROOMS
+        sample_rooms=SAMPLE_ROOMS,
+        page_key="studio"
     )
 
 @app.route("/data/samples/<path:filename>")
 def serve_sample_file(filename):
-    file_path = os.path.join("data", "samples", filename)
-    if os.path.exists(file_path):
-        return send_file(file_path)
-    return "Not Found", 404
-
-@app.route("/docs")
-def swagger_docs():
-    """Renders Swagger UI matching 'SmartSpace AI - Swagger UI' tab."""
-    return render_template("swagger_docs.html")
+    return send_from_directory(PROJECT_ROOT / "data" / "samples", filename)
 
 # =========================================================================
 # Project & Room State REST APIs
@@ -132,10 +124,13 @@ def save_room_api():
         uploaded_file = request.files.get("roomPhoto")
         annotated_img_b64 = None
         detected_furniture = None
+        vision_result = None
         
         if uploaded_file and uploaded_file.filename != "":
             img_bytes = uploaded_file.read()
-            vision_result = vision_extractor.process_room_image(img_bytes)
+            vision_result = vision_extractor.process_room_image(
+                img_bytes, room_dimensions={"width": width_m, "length": length_m, "height": height_m}
+            )
             annotated_img_b64 = vision_result.get("annotated_image")
             if "room_state" in vision_result:
                 detected_furniture = vision_result["room_state"].get("initial_furniture")
@@ -150,7 +145,7 @@ def save_room_api():
                 "width": 1.4
             })
             
-        # If no furniture detected from photo, populate default recommended furniture based on room type
+        # If no furniture was detected, use a recommendation that matches the selected room.
         if not detected_furniture:
             if "bedroom" in room_type.lower():
                 detected_furniture = [
@@ -159,7 +154,29 @@ def save_room_api():
                     {"id": "desk_1", "type": "desk", "x": width_m * 0.25, "y": length_m * 0.3, "width": 1.2, "depth": 0.6, "height": 0.75, "rotation": 0, "cost": 4200, "label": "Study Desk"},
                     {"id": "chair_1", "type": "chair", "x": width_m * 0.25, "y": length_m * 0.45, "width": 0.6, "depth": 0.6, "height": 0.85, "rotation": 0, "cost": 1500, "label": "Desk Chair"}
                 ]
-            else: # Living Room / Office
+            elif "office" in room_type.lower():
+                detected_furniture = [
+                    {"id": "desk_1", "type": "desk", "x": width_m * 0.5, "y": length_m * 0.65, "rotation": 0, "cost": 4200, "label": "Study Desk"},
+                    {"id": "chair_1", "type": "chair", "x": width_m * 0.5, "y": length_m * 0.4, "rotation": 0, "cost": 1500, "label": "Office Chair"},
+                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.82, "y": length_m * 0.65, "rotation": 90, "cost": 3500, "label": "Storage Cabinet"}
+                ]
+            elif "dining" in room_type.lower():
+                detected_furniture = [
+                    {"id": "table_1", "type": "table", "x": width_m * 0.5, "y": length_m * 0.55, "rotation": 0, "cost": 3500, "label": "Dining Table"},
+                    {"id": "chair_1", "type": "chair", "x": width_m * 0.5, "y": length_m * 0.22, "rotation": 0, "cost": 1500, "label": "Dining Chair"},
+                    {"id": "chair_2", "type": "chair", "x": width_m * 0.5, "y": length_m * 0.84, "rotation": 180, "cost": 1500, "label": "Dining Chair"},
+                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.82, "y": length_m * 0.55, "rotation": 90, "cost": 3500, "label": "Sideboard"}
+                ]
+            elif "kitchen" in room_type.lower():
+                detected_furniture = [
+                    {"id": "table_1", "type": "table", "x": width_m * 0.5, "y": length_m * 0.5, "rotation": 0, "cost": 3500, "label": "Kitchen Island"},
+                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.82, "y": length_m * 0.5, "rotation": 90, "cost": 3500, "label": "Storage Cabinet"}
+                ]
+            elif "bathroom" in room_type.lower():
+                detected_furniture = [
+                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.75, "y": length_m * 0.55, "rotation": 90, "cost": 3500, "label": "Vanity Cabinet"}
+                ]
+            else:  # Living room / studio apartment
                 detected_furniture = [
                     {"id": "sofa_1", "type": "sofa", "x": width_m * 0.5, "y": length_m * 0.3, "width": 2.1, "depth": 0.9, "height": 0.85, "rotation": 0, "cost": 14000, "label": "3-Seater Sofa"},
                     {"id": "table_1", "type": "table", "x": width_m * 0.5, "y": length_m * 0.55, "width": 1.2, "depth": 0.7, "height": 0.45, "rotation": 0, "cost": 3500, "label": "Coffee Table"},
@@ -167,6 +184,14 @@ def save_room_api():
                     {"id": "chair_1", "type": "chair", "x": width_m * 0.2, "y": length_m * 0.55, "width": 0.7, "depth": 0.7, "height": 0.8, "rotation": 90, "cost": 2200, "label": "Lounge Chair"}
                 ]
                 
+        for item in detected_furniture:
+            specs = FURNITURE_SPECS.get(item.get("type", "chair"), FURNITURE_SPECS["chair"])
+            item.setdefault("width", specs["width"])
+            item.setdefault("depth", specs["depth"])
+            item.setdefault("height", specs["height"])
+            item.setdefault("cost", specs["base_cost"])
+            item.setdefault("preferred_wall", specs.get("preferred_wall", False))
+
         room_id = str(uuid.uuid4())[:8]
         room_obj = {
             "id": room_id,
@@ -181,7 +206,10 @@ def save_room_api():
             "secondaryColor": secondary_color,
             "material": material,
             "furniture": detected_furniture,
-            "annotated_image": annotated_img_b64
+            "annotated_image": annotated_img_b64,
+            "vision_model_available": vision_extractor.detector.available,
+            "vision_model_backend": vision_extractor.detector.engine_type,
+            "vision_detected_count": (vision_result or {}).get("detected_count", 0)
         }
         
         ROOMS_STORE[room_id] = room_obj
@@ -239,7 +267,7 @@ def optimize_layout():
     """Runs the Deep Q-Network (DQN) layout optimizer."""
     try:
         room_data = request.get_json() or {}
-        max_steps = int(room_data.get("max_steps", 25))
+        max_steps = max(0, min(100, int(room_data.get("max_steps", 25))))
         
         env = InteriorEnv(room_data)
         trajectory = dqn_agent.optimize_layout_trajectory(env, max_steps=max_steps)
@@ -249,7 +277,9 @@ def optimize_layout():
             "success": True,
             "trajectory": trajectory,
             "final_layout": final_layout,
-            "step_count": len(trajectory)
+            "step_count": len(trajectory),
+            "optimizer_trained": dqn_agent.is_trained,
+            "optimizer_backend": dqn_agent.backend
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -267,46 +297,47 @@ def evaluate_custom_layout():
 
 @app.route("/api/training-telemetry", methods=["GET"])
 def get_training_telemetry():
-    """Provides training telemetry for YOLO and DQN."""
-    dqn_file = os.path.join("data", "models", "dqn_training_history.json")
+    """Return only training curves accompanied by real installed checkpoints."""
+    models_dir = PROJECT_ROOT / "data" / "models"
+    dqn_file = models_dir / "dqn_training_history.json"
+    yolo_file = PROJECT_ROOT / "runs" / "interior_yolo" / "yolo_training_telemetry.json"
     dqn_data = None
-    if os.path.exists(dqn_file):
-        with open(dqn_file, "r") as f:
-            dqn_data = json.load(f)
-    else:
-        episodes = list(range(1, 41))
-        dqn_data = {
-            "episodes": episodes,
-            "rewards": [round(-65.0 + 82.0 * (1 - (1 - ep/40)**1.5) + (ep%3)*1.5, 2) for ep in episodes],
-            "ergonomics_scores": [round(35.0 + 58.0 * (1 - (1 - ep/40)**2), 1) for ep in episodes],
-            "collision_counts": [max(0, int(6 * (1 - ep/30))) for ep in episodes],
-            "circulation_ratios": [round(0.40 + 0.58 * (ep/40), 2) for ep in episodes]
-        }
-        
-    yolo_file = os.path.join("runs", "interior_yolo", "yolo_training_telemetry.json")
     yolo_data = None
-    if os.path.exists(yolo_file):
-        with open(yolo_file, "r") as f:
-            yolo_data = json.load(f)
-    else:
-        epochs = list(range(1, 31))
-        yolo_data = {
-            "model": "YOLO11-Interior-Scratch",
-            "epochs": 30,
-            "history": [
-                {
-                    "epoch": ep,
-                    "box_loss": round(2.8 * (1.0 - 0.72 * (ep/30)) + 0.05, 4),
-                    "cls_loss": round(3.4 * (1.0 - 0.80 * (ep/30)) + 0.08, 4),
-                    "precision": round(0.12 + 0.76 * (ep/30), 4),
-                    "recall": round(0.10 + 0.80 * (ep/30), 4),
-                    "mAP50": round(0.06 + 0.83 * (1.0 - (1.0 - (ep/30))**2), 4)
-                }
-                for ep in epochs
-            ]
-        }
-        
+    if dqn_agent.is_trained and dqn_file.is_file():
+        try:
+            candidate = json.loads(dqn_file.read_text(encoding="utf-8"))
+            if candidate.get("real_training") is True:
+                dqn_data = candidate
+        except (OSError, ValueError):
+            pass
+    if vision_extractor.detector.available and yolo_file.is_file():
+        try:
+            candidate = json.loads(yolo_file.read_text(encoding="utf-8"))
+            if candidate.get("real_training") is True:
+                yolo_data = candidate
+        except (OSError, ValueError):
+            pass
     return jsonify({"success": True, "dqn": dqn_data, "yolo": yolo_data})
+
+
+@app.route("/api/system-status", methods=["GET"])
+def get_system_status():
+    """Report the actual installed model state for the studio UI."""
+    detector = vision_extractor.detector
+    return jsonify({
+        "success": True,
+        "vision": {
+            "available": detector.available,
+            "backend": detector.engine_type,
+            "model": detector.model_path.name if detector.available else None,
+        },
+        "optimizer": {
+            "available": True,
+            "trained": dqn_agent.is_trained,
+            "backend": dqn_agent.backend,
+            "mode": "trained DQN with spatial search" if dqn_agent.is_trained else "spatial search (checkpoint not trained)",
+        },
+    })
 
 @app.route("/api/export-spec", methods=["POST"])
 def export_spec():
@@ -319,14 +350,14 @@ def export_spec():
         
         spec_text = []
         spec_text.append("=" * 60)
-        spec_text.append("           SMARTSPACE AI - INTERIOR DESIGN SPECIFICATION")
+        spec_text.append("           SMARTSPACE AI · INTERIOR DESIGN SPECIFICATION")
         spec_text.append("=" * 60)
         spec_text.append(f"Room Dimensions : {layout.get('room_width', 4.8)}m x {layout.get('room_length', 4.0)}m")
         spec_text.append(f"Ergonomics Score: {metrics.get('ergonomics_score', 0)}%")
         spec_text.append(f"Circulation     : {metrics.get('circulation_ratio', 0)*100:.0f}% Reachable")
         spec_text.append(f"Collisions      : {metrics.get('collision_count', 0)} Detected")
-        spec_text.append(f"Total Cost      : Rs. {metrics.get('total_cost', 0):,}")
-        spec_text.append(f"Budget Limit    : Rs. {layout.get('budget', 0):,}")
+        spec_text.append(f"Total Cost      : ₹{metrics.get('total_cost', 0):,}")
+        spec_text.append(f"Budget Limit    : ₹{layout.get('budget', 0):,}")
         spec_text.append("-" * 60)
         spec_text.append("FURNITURE SCHEDULE:")
         for idx, item in enumerate(furniture, 1):
@@ -335,10 +366,10 @@ def export_spec():
                 f"Pos: ({item['x']:.2f}m, {item['y']:.2f}m) | "
                 f"Rot: {item.get('rotation', 0):>3} deg | "
                 f"Size: {item['width']:.2f}x{item['depth']:.2f}m | "
-                f"Rs. {item.get('cost', 0):,}"
+                f"₹{item.get('cost', 0):,}"
             )
         spec_text.append("=" * 60)
-        spec_text.append("Generated with SmartSpace AI - Vision-Driven DQN Interior Platform")
+        spec_text.append("Generated with SmartSpace AI · Interior Design Studio")
         
         buffer = io.BytesIO()
         buffer.write("\n".join(spec_text).encode("utf-8"))
@@ -353,67 +384,10 @@ def export_spec():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-# =========================================================================
-# OpenAPI Specification Route for Swagger UI
-# =========================================================================
+@app.errorhandler(404)
+def page_not_found(_error):
+    return render_template("404.html", page_key="not-found"), 404
 
-@app.route("/api/openapi.json")
-def openapi_spec():
-    """Returns OpenAPI 3.0 specification for Swagger UI."""
-    return jsonify({
-        "openapi": "3.0.0",
-        "info": {
-            "title": "SmartSpace AI API",
-            "version": "1.0.0",
-            "description": "REST APIs for YOLO Computer Vision Detection and DQN Interior Layout Optimization."
-        },
-        "paths": {
-            "/api/projects": {
-                "post": {
-                    "summary": "Create a new interior design project",
-                    "requestBody": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {"type": "string"},
-                                        "roomType": {"type": "string"},
-                                        "description": {"type": "string"}
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "responses": {"200": {"description": "Project created"}}
-                }
-            },
-            "/api/rooms": {
-                "post": {
-                    "summary": "Save room details & process photo with YOLO",
-                    "responses": {"200": {"description": "Room saved"}}
-                }
-            },
-            "/api/detect": {
-                "post": {
-                    "summary": "Run YOLO 10-class interior object detection",
-                    "responses": {"200": {"description": "Detection results"}}
-                }
-            },
-            "/api/optimize": {
-                "post": {
-                    "summary": "Run DQN layout optimization loop",
-                    "responses": {"200": {"description": "Optimized layout trajectory"}}
-                }
-            },
-            "/api/evaluate": {
-                "post": {
-                    "summary": "Evaluate layout ergonomics & A* circulation",
-                    "responses": {"200": {"description": "Layout metrics"}}
-                }
-            }
-        }
-    })
 
 if __name__ == "__main__":
     print("\n" + "="*65)
@@ -422,6 +396,5 @@ if __name__ == "__main__":
     print("  [*] Create Project: http://127.0.0.1:5000/create-project")
     print("  [*] Room Details:   http://127.0.0.1:5000/room-details")
     print("  [*] AI Studio:      http://127.0.0.1:5000/studio")
-    print("  [*] Swagger Docs:   http://127.0.0.1:5000/docs")
     print("="*65 + "\n")
     app.run(host="127.0.0.1", port=5000, debug=False)

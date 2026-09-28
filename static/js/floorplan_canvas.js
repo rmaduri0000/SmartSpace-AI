@@ -106,7 +106,18 @@ class FloorplanCanvas {
     this.budget = layoutData.budget || 20000;
     this.door = layoutData.door || this.door;
     this.windows = layoutData.windows || this.windows;
-    this.furniture = layoutData.furniture || layoutData.initial_furniture || [];
+    const furnitureSpecs = window.smartSpaceFurnitureSpecs || {};
+    this.furniture = (layoutData.furniture || layoutData.initial_furniture || []).map(item => {
+      const specs = furnitureSpecs[item.type] || {};
+      return {
+        ...item,
+        width: Number(item.width ?? specs.width ?? 1),
+        depth: Number(item.depth ?? specs.depth ?? 1),
+        height: Number(item.height ?? specs.height ?? 0.8),
+        cost: Number(item.cost ?? specs.base_cost ?? 1000),
+        label: item.label || specs.label || (item.type || 'Furniture').toUpperCase()
+      };
+    });
     
     if (layoutData.metrics?.paths) {
       this.paths = layoutData.metrics.paths;

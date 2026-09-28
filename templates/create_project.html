@@ -7,17 +7,12 @@
     <title>Create Project | SmartSpace AI</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+          href="{{ url_for('static', filename='css/style.css', v='20260928-consistency') }}">
 </head>
 
-<body class="interior-home">
+<body class="site-page page-project">
 
-    <!-- NAVBAR -->
-    <nav class="interior-menu">
-        <a href="/" class="menu-active">SmartSpace AI</a>
-        <a href="/">Home</a>
-        <span>Local Mode Active</span>
-    </nav>
+    {% include "_site_header.html" %}
 
 
     <!-- CREATE PROJECT -->
@@ -25,20 +20,18 @@
 
         <div class="create-project-container">
 
-            <div class="create-project-label">
-                ✦ AI INTERIOR DESIGN STUDIO
-            </div>
+            <div class="create-project-label">STEP 01 <span>PROJECT BASICS</span></div>
 
             <h1>
                 Create your <em>dream space.</em>
             </h1>
 
             <p class="create-project-subtitle">
-                Start a new intelligent interior design project.
+                Set the direction for your room. You can fine-tune dimensions, materials and budget in the next step.
             </p>
 
 
-            <form method="POST" action="/create-project">
+            <form id="projectForm">
 
                 <!-- PROJECT NAME -->
                 <div class="form-group">
@@ -49,7 +42,7 @@
                     <input
                         type="text"
                         id="project_name"
-                        name="project_name"
+                        name="name"
                         value="My Modern Living Room"
                         required
                     >
@@ -64,11 +57,11 @@
 
                     <select
                         id="room_type"
-                        name="room_type"
+                        name="roomType"
                         required
                     >
-                        <option value="Living Room">Living Room</option>
-                        <option value="Bedroom" selected>Bedroom</option>
+                        <option value="Living Room" selected>Living Room</option>
+                        <option value="Bedroom">Bedroom</option>
                         <option value="Master Bedroom">Master Bedroom</option>
                         <option value="Kitchen">Kitchen</option>
                         <option value="Bathroom">Bathroom</option>
@@ -95,18 +88,61 @@
 
                 <!-- BUTTON -->
                 <button
+                    id="createProjectButton"
                     type="submit"
                     class="create-project-button"
                 >
-                    Create Project & Continue
+                    Continue to room details
                     <span>→</span>
                 </button>
+
+                <p id="projectFormError" class="form-error" role="alert" hidden></p>
 
             </form>
 
         </div>
 
     </main>
+
+    {% include "_site_footer.html" %}
+
+    <script>
+        const projectForm = document.getElementById('projectForm');
+        const projectButton = document.getElementById('createProjectButton');
+        const projectError = document.getElementById('projectFormError');
+
+        projectForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            projectError.hidden = true;
+            projectButton.disabled = true;
+            projectButton.innerHTML = 'Saving your project…';
+
+            const values = Object.fromEntries(new FormData(projectForm));
+            try {
+                const response = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(values)
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || 'We could not save this project. Please try again.');
+                }
+                try {
+                    localStorage.setItem('smartspace_current_project', JSON.stringify(result.project));
+                } catch (storageError) {
+                    try { sessionStorage.setItem('smartspace_current_project', JSON.stringify(result.project)); }
+                    catch (_sessionError) { console.warn('Project details could not be persisted in this browser.', storageError); }
+                }
+                window.location.assign('/room-details');
+            } catch (error) {
+                projectError.textContent = error.message || 'Unable to save the project. Check your connection and try again.';
+                projectError.hidden = false;
+                projectButton.disabled = false;
+                projectButton.innerHTML = 'Continue to room details <span>→</span>';
+            }
+        });
+    </script>
 
 </body>
 </html>

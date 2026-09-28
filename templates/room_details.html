@@ -4,30 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Room Details — SmartSpace AI</title>
-  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='20260928-consistency') }}">
 </head>
-<body>
+<body class="site-page page-room">
 
-  <!-- Top Navbar matching Screenshots 1, 2, 5 -->
-  <header class="site-nav">
-    <a href="/" class="brand-logo">
-      <span class="logo-spark">✨</span>
-      <span class="brand-text">SmartSpace AI</span>
-    </a>
-
-    <nav class="nav-links">
-      <a href="/create-project" class="nav-link">Back</a>
-      <span class="status-pill" style="font-size: 0.78rem;">
-        <span class="pulse-dot"></span> Local Model (Offline)
-      </span>
-    </nav>
-  </header>
+  {% include "_site_header.html" %}
 
   <main class="form-container">
     
     <div class="form-page-header">
-      <h1 class="form-title">Room Details</h1>
-      <p class="form-subtitle">Tell SmartSpace AI about your room.</p>
+      <div class="create-project-label">STEP 02 <span>YOUR ROOM</span></div>
+      <h1 class="form-title">Room details</h1>
+      <p class="form-subtitle">Add the dimensions and details that will shape your layout.</p>
     </div>
 
     <form id="roomDetailsForm" class="form-card" enctype="multipart/form-data">
@@ -53,9 +41,13 @@
       <div class="form-group">
         <label for="roomType" class="form-label">Room Type</label>
         <select id="roomType" name="roomType" class="form-select" required>
-          <option value="Office">Office</option>
           <option value="Living Room">Living Room</option>
+          <option value="Bedroom">Bedroom</option>
           <option value="Master Bedroom" selected>Master Bedroom</option>
+          <option value="Kitchen">Kitchen</option>
+          <option value="Bathroom">Bathroom</option>
+          <option value="Dining Room">Dining Room</option>
+          <option value="Office">Home Office</option>
           <option value="Studio Apartment">Studio Apartment</option>
         </select>
       </div>
@@ -143,7 +135,7 @@
         </select>
       </div>
 
-      <div class="form-group">
+      <div class="form-group form-group-wide">
         <label for="roomDescription" class="form-label">Description</label>
         <textarea 
           id="roomDescription" 
@@ -161,23 +153,26 @@
       <div id="dropZone" class="upload-dropzone">
         <div class="upload-btn-row">
           <button type="button" id="browseFileBtn" class="choose-file-btn">Choose File</button>
-          <span id="fileNameLabel" style="font-size: 0.85rem; color: var(--text-dim);">No file chosen</span>
+          <span id="fileNameLabel" class="upload-file-label">No file chosen</span>
         </div>
-        <div class="form-hint">Upload a clear photo of your room. JPG, JPEG or PNG • Maximum 10 MB</div>
-        <input type="file" id="roomPhotoInput" name="roomPhoto" accept="image/*" style="display: none;">
-        <div id="imgPreviewWrapper" style="display: none; margin-top: 0.75rem;">
-          <img id="imgThumbnail" src="" style="max-height: 120px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+        <div class="form-hint">Upload a clear photo of your room. JPG, JPEG or PNG · Maximum 10 MB</div>
+        <input type="file" id="roomPhotoInput" name="roomPhoto" accept="image/jpeg,image/png" class="file-input-hidden">
+        <div id="imgPreviewWrapper" class="image-preview" hidden>
+          <img id="imgThumbnail" src="" alt="Room photo preview">
         </div>
       </div>
 
       <!-- Submit Button -->
       <button type="submit" id="saveRoomBtn" class="btn-primary-gradient">
-        Save Room & Continue ➜
+        Open design studio <span>→</span>
       </button>
+      <p id="roomFormError" class="form-error" role="alert" hidden></p>
 
     </form>
 
   </main>
+
+  {% include "_site_footer.html" %}
 
   <script>
     const dropZone = document.getElementById('dropZone');
@@ -186,6 +181,23 @@
     const fileNameLabel = document.getElementById('fileNameLabel');
     const imgPreviewWrapper = document.getElementById('imgPreviewWrapper');
     const imgThumbnail = document.getElementById('imgThumbnail');
+    const roomFormError = document.getElementById('roomFormError');
+    let project = null;
+    let savedProject = null;
+    try { savedProject = localStorage.getItem('smartspace_current_project'); } catch (_error) { }
+    if (!savedProject) {
+      try { savedProject = sessionStorage.getItem('smartspace_current_project'); } catch (_error) { }
+    }
+    try { project = JSON.parse(savedProject || 'null'); }
+    catch (error) { console.warn('Could not read the saved project details.', error); }
+
+    if (project) {
+      document.getElementById('roomName').value = project.name || 'My Room';
+      const matchingType = [...document.getElementById('roomType').options]
+        .find(option => option.value.toLowerCase() === (project.roomType || '').toLowerCase());
+      if (matchingType) matchingType.selected = true;
+      if (project.description) document.getElementById('roomDescription').value = project.description;
+    }
 
     browseFileBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -204,16 +216,16 @@
 
     dropZone.addEventListener('dragover', (e) => {
       e.preventDefault();
-      dropZone.style.borderColor = 'var(--primary)';
+      dropZone.classList.add('drag-active');
     });
 
     dropZone.addEventListener('dragleave', () => {
-      dropZone.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+      dropZone.classList.remove('drag-active');
     });
 
     dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
-      dropZone.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+      dropZone.classList.remove('drag-active');
       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
         roomPhotoInput.files = e.dataTransfer.files;
         showPreview(e.dataTransfer.files[0]);
@@ -221,11 +233,28 @@
     });
 
     function showPreview(file) {
+      if (!['image/jpeg', 'image/png'].includes(file.type)) {
+        roomFormError.textContent = 'Choose a JPG or PNG image.';
+        roomFormError.hidden = false;
+        roomPhotoInput.value = '';
+        fileNameLabel.textContent = 'No file chosen';
+        imgPreviewWrapper.hidden = true;
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        roomFormError.textContent = 'This image is larger than 10 MB. Choose a smaller image.';
+        roomFormError.hidden = false;
+        roomPhotoInput.value = '';
+        fileNameLabel.textContent = 'No file chosen';
+        imgPreviewWrapper.hidden = true;
+        return;
+      }
+      roomFormError.hidden = true;
       fileNameLabel.textContent = file.name;
       const reader = new FileReader();
       reader.onload = (ev) => {
         imgThumbnail.src = ev.target.result;
-        imgPreviewWrapper.style.display = 'block';
+        imgPreviewWrapper.hidden = false;
       };
       reader.readAsDataURL(file);
     }
@@ -233,8 +262,9 @@
     document.getElementById('roomDetailsForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const saveBtn = document.getElementById('saveRoomBtn');
+      roomFormError.hidden = true;
       saveBtn.disabled = true;
-      saveBtn.innerHTML = '<span>⚡ Processing with YOLO AI...</span>';
+      saveBtn.textContent = 'Analyzing your room…';
 
       const formData = new FormData(document.getElementById('roomDetailsForm'));
 
@@ -246,17 +276,39 @@
         const data = await res.json();
         
         if (data.success) {
-          localStorage.setItem('smartspace_current_room', JSON.stringify(data.room));
-          window.location.href = '/studio';
+          if (project) {
+            data.room.projectId = project.id;
+            data.room.projectName = project.name;
+          }
+          try {
+            localStorage.setItem('smartspace_current_room', JSON.stringify(data.room));
+          } catch (storageError) {
+            const compactRoom = { ...data.room };
+            delete compactRoom.annotated_image;
+            try {
+              localStorage.removeItem('smartspace_current_room');
+              localStorage.removeItem('smartspace_studio_layout');
+              localStorage.setItem('smartspace_current_room', JSON.stringify(compactRoom));
+            } catch (storageError) {
+              console.warn('This browser could not persist the room details.', storageError);
+              try {
+                sessionStorage.setItem('smartspace_current_room', JSON.stringify(compactRoom));
+              } catch (_sessionError) {
+                // Continue into the studio with its sample room if browser storage is disabled.
+              }
+            }
+          }
+          try { localStorage.removeItem('smartspace_studio_layout'); } catch (_error) { }
+          try { sessionStorage.removeItem('smartspace_studio_layout'); } catch (_error) { }
+          window.location.assign('/studio');
         } else {
-          alert('Error: ' + (data.error || 'Failed to process room details'));
-          saveBtn.disabled = false;
-          saveBtn.innerHTML = 'Save Room & Continue ➜';
+          throw new Error(data.error || 'We could not process the room details. Please try again.');
         }
-      } catch (err) {
-        console.error('Submission error:', err);
-        // Fallback navigate to studio
-        window.location.href = '/studio';
+      } catch (error) {
+        roomFormError.textContent = error.message || 'Unable to save the room. Check your connection and try again.';
+        roomFormError.hidden = false;
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = 'Open design studio <span>→</span>';
       }
     });
   </script>

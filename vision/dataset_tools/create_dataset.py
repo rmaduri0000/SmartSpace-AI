@@ -11,10 +11,12 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 from config import TARGET_CLASSES
 
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+
 DATA_YAML_TEMPLATE = """# SmartSpace AI - Interior Object Detection Dataset
 # 10 Specialized Interior Object Classes
 
-path: {dataset_path}
+path: .
 train: images/train
 val: images/val
 test: images/test
@@ -29,7 +31,7 @@ def setup_yolo_dataset(base_dir: str = "data/yolo_dataset"):
     Creates train/val/test folders for images and labels,
     and writes data.yaml matching the SmartSpace AI specification.
     """
-    abs_base = os.path.abspath(base_dir)
+    abs_base = base_dir if os.path.isabs(base_dir) else os.path.join(PROJECT_ROOT, base_dir)
     print(f"Setting up SmartSpace AI YOLO dataset at: {abs_base}")
     
     subdirs = [
@@ -44,10 +46,7 @@ def setup_yolo_dataset(base_dir: str = "data/yolo_dataset"):
         
     # Format names yaml
     names_str = "\n".join([f"  {idx}: {name}" for idx, name in enumerate(TARGET_CLASSES)])
-    yaml_content = DATA_YAML_TEMPLATE.format(
-        dataset_path=abs_base.replace("\\", "/"),
-        names_yaml=names_str
-    )
+    yaml_content = DATA_YAML_TEMPLATE.format(names_yaml=names_str)
     
     yaml_path = os.path.join(abs_base, "data.yaml")
     with open(yaml_path, "w", encoding="utf-8") as f:
