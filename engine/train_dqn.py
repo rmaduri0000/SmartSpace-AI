@@ -11,8 +11,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from config import SAMPLE_ROOMS
 from engine.interior_env import InteriorEnv
 from engine.dqn_agent import DQNAgent
+from database.models import decode_json, initialize_database, recent_transitions
 
-def train_dqn(episodes: int = 100, max_steps_per_episode: int = 40, output_dir: str = "data/models"):
+def train_dqn(episodes: int = 100, max_steps_per_episode: int = 40,
+              output_dir: str = "data/models", include_database_replay: bool = True):
     if episodes < 1 or max_steps_per_episode < 1:
         raise ValueError("episodes and max_steps_per_episode must both be positive")
     print(f"=== Starting SmartSpace AI DQN Training ({episodes} episodes) ===")
@@ -26,6 +28,18 @@ def train_dqn(episodes: int = 100, max_steps_per_episode: int = 40, output_dir: 
     env = InteriorEnv(room_config)
     agent = DQNAgent(state_dim=env.state_dim, action_dim=env.action_dim,
                      model_path=str(output_path / "dqn_policy.npz"))
+    database_replay_count = 0
+    if include_database_replay:
+        initialize_database()
+        for record in reversed(recent_transitions(limit=5000)):
+            state = decode_json(record["state_133d_json"], [])
+            next_state = decode_json(record["next_state_133d_json"], [])
+            action = int(record["action_index"])
+            if len(state) != env.state_dim or len(next_state) != env.state_dim or not 0 <= action < env.action_dim:
+                continue
+            agent.memory.push(state, action, float(record["reward"]), next_state, bool(record["done"]))
+            database_replay_count += 1
+        print(f"Loaded {database_replay_count} validated transitions from ReplayBufferStore")
     
     history = {
         "episodes": [],
@@ -34,7 +48,8 @@ def train_dqn(episodes: int = 100, max_steps_per_episode: int = 40, output_dir: 
         "collision_counts": [],
         "circulation_ratios": [],
         "loss": [],
-        "training_updates": 0
+        "training_updates": 0,
+        "database_replay_transitions": database_replay_count,
     }
     
     for ep in range(1, episodes + 1):
@@ -94,6 +109,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train SmartSpace AI DQN Layout Optimizer")
     parser.add_argument("--episodes", type=int, default=50, help="Number of training episodes")
     parser.add_argument("--steps", type=int, default=30, help="Max steps per episode")
+    parser.add_argument("--no-db-replay", action="store_true", help="ignore ReplayBufferStore and train from live rollouts only")
     args = parser.parse_args()
     
-    train_dqn(episodes=args.episodes, max_steps_per_episode=args.steps)
+    train_dqn(episodes=args.episodes, max_steps_per_episode=args.steps,
+              include_database_replay=not args.no_db_replay)

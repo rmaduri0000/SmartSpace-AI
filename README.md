@@ -65,13 +65,22 @@ Ensure Python 3.10+ is installed:
 pip install -r requirements.txt
 ```
 
-The standard install does not include a trained detector. Add a compatible `yolo_interior.pt` or `yolo_interior.onnx` file under `data/models` to enable photo detections. ONNX inference also needs `onnxruntime`. Training YOLO requires `ultralytics` and `torch`.
+For real photo inference, install `pip install -r requirements-vision.txt` using the Python environment that runs Flask. The detector prefers a custom `data/models/yolo_interior.pt` or `.onnx` checkpoint; when absent, Ultralytics automatically downloads `data/models/yolov8n.pt`. Its pretrained labels map to bed, sofa, chair, table and tv. Wardrobe, desk, cabinet, door and window require a custom trained checkpoint. ONNX inference also needs `onnxruntime`. Photo-to-floor coordinates are estimates; missing weights, failed inference or unusable photos use room-type starter furniture.
 
 ### 2. Launch the Studio Web Interface
 ```bash
 python app.py
 ```
 Open your browser at: **`http://127.0.0.1:5000`**
+
+### Initialize the furniture and room recommendation database
+```bash
+python scripts/seed_database.py
+```
+This creates the SQLite catalog, curated presets, and replay-buffer examples.
+The included records are ergonomic-rule seed data, not 3D-FRONT/3D-FUTURE
+exports. See [the database and recommendation guide](docs/database-and-recommendations.md)
+for schema, importer format, and DQN training details.
 
 ---
 
@@ -165,3 +174,7 @@ SmartSpace-AI/
     ├── test_dqn.py
     └── test_vision.py
 ```
+
+### Viva refinement and local verification
+
+See [the Viva review guide](docs/VIVA_REVIEW.md) for the annotated SAT/A*/DQN/YOLO walkthrough, background-job API contract, cleanup record and verified demo commands. On this machine, use `.venv-viva\Scripts\python.exe app.py`; the original virtual environments reference Python installations from another computer. The guide clearly distinguishes trained-model inference from the catalogue/spatial fallback.

@@ -9,7 +9,8 @@
     <title>SmartSpace AI | Interior Design</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css', v='20260928-consistency') }}">
+          href="{{ url_for('static', filename='css/style.css', v='20260928-dual-engine-modal') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/smartspace-frontend.css', v='20260929-v2') }}">
 </head>
 
 <body class="site-page page-home">
@@ -48,8 +49,9 @@
 
             <div class="hero-buttons">
 
-                <a href="/create-project"
-                   class="design-button">
+                <a href="{{ url_for('views.create_project_page') }}"
+                   class="design-button"
+                   id="hero-start-design-btn">
                     Start Your Design
                     <span>→</span>
                 </a>
@@ -99,68 +101,10 @@
             <div class="room-glow"></div>
 
             <div class="interior-room">
-
-                <!-- Window -->
-
-                <div class="room-window">
-                    <div class="window-light"></div>
-                </div>
-
-
-                <!-- Wall Art -->
-
-                <div class="wall-art">
-                    <div></div>
-                    <div></div>
-                </div>
-
-
-                <!-- Sofa -->
-
-                <div class="design-sofa">
-                    <div class="sofa-back"></div>
-                    <div class="sofa-seat"></div>
-                    <div class="sofa-cushion cushion-one"></div>
-                    <div class="sofa-cushion cushion-two"></div>
-                </div>
-
-
-                <!-- Coffee Table -->
-
-                <div class="coffee-table">
-                    <div class="table-top"></div>
-                    <div class="table-leg left-leg"></div>
-                    <div class="table-leg right-leg"></div>
-                </div>
-
-
-                <!-- Plant -->
-
-                <div class="design-plant">
-
-                    <div class="plant-leaves">
-                        🌿
-                    </div>
-
-                    <div class="plant-pot"></div>
-
-                </div>
-
-
-                <!-- Floor Lamp -->
-
-                <div class="floor-lamp">
-
-                    <div class="lamp-shade"></div>
-                    <div class="lamp-stand"></div>
-                    <div class="lamp-base"></div>
-
-                </div>
-
-
-                <!-- Rug -->
-
-                <div class="design-rug"></div>
+                <img class="interior-room-photo"
+                     src="{{ url_for('static', filename='images/interior-hero.jpg') }}"
+                     alt="Bright neutral living room with a cream sofa and natural wood accents"
+                     fetchpriority="high">
 
             </div>
 
@@ -200,112 +144,25 @@
         </div>
 
 
-        <div class="style-grid">
-
-            <!-- Modern -->
-
-            <div class="style-item style-large">
-
-                <div class="style-image modern-room">
-
-                    <div class="style-sofa"></div>
-                    <div class="style-table"></div>
-
-                    <div class="style-plant">
-                        🌿
+        <div class="style-grid showcase-grid">
+            {% for preset in showcase_presets %}
+            <article class="style-item showcase-item {{ 'style-large' if loop.first else '' }}">
+                <div class="style-image showcase-image">
+                    <img class="style-photo" src="{{ preset.thumbnail }}" alt="{{ preset.name }} interior design photograph" loading="lazy" decoding="async">
+                    <div class="showcase-image-tags"><span>{{ preset.style|title }}</span><span>{{ preset.score|round|int }}% ergonomic score</span></div>
+                </div>
+                <div class="style-info showcase-info">
+                    <div><h3>{{ preset.name }}</h3><span>{{ preset.description }}</span></div>
+                    <div class="showcase-metrics">
+                        <span><b>Room</b>{{ '%.1f'|format(preset.length_m / 0.3048) }} × {{ '%.1f'|format(preset.width_m / 0.3048) }} ft <small>({{ '%.2f'|format(preset.length_m) }} × {{ '%.2f'|format(preset.width_m) }} m)</small></span>
+                        <span><b>Budget</b>₹{{ '{:,.0f}'.format(preset.budget) }}</span>
+                        <span><b>A* reachable</b>{{ (preset.circulation * 100)|round|int }}%</span>
                     </div>
-
+                    <a class="showcase-load-link" href="/studio?preset={{ preset.id }}">Load into Studio <span aria-hidden="true">→</span></a>
                 </div>
-
-                <div class="style-info">
-
-                    <h3>Modern</h3>
-
-                    <span>
-                        Clean · Elegant · Functional
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <!-- Luxury -->
-
-            <div class="style-item">
-
-                <div class="style-image luxury-room">
-
-                    <div class="luxury-sofa"></div>
-                    <div class="luxury-light"></div>
-
-                </div>
-
-                <div class="style-info">
-
-                    <h3>Luxury</h3>
-
-                    <span>
-                        Rich · Refined · Timeless
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <!-- Minimal -->
-
-            <div class="style-item">
-
-                <div class="style-image minimal-room">
-
-                    <div class="minimal-chair"></div>
-
-                    <div class="minimal-plant">
-                        🌿
-                    </div>
-
-                </div>
-
-                <div class="style-info">
-
-                    <h3>Minimal</h3>
-
-                    <span>
-                        Calm · Simple · Natural
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <!-- Scandinavian -->
-
-            <div class="style-item">
-
-                <div class="style-image scandi-room">
-
-                    <div class="scandi-sofa"></div>
-                    <div class="scandi-table"></div>
-
-                </div>
-
-                <div class="style-info">
-
-                    <h3>Scandinavian</h3>
-
-                    <span>
-                        Warm · Natural · Comfortable
-                    </span>
-
-                </div>
-
-            </div>
-
+            </article>
+            {% endfor %}
         </div>
-
     </section>
 
 
@@ -465,57 +322,40 @@
 
         <div class="what-if-panel">
 
-            <!-- SIMULATION ROOM -->
-
-            <div class="what-if-room">
-
-                <div class="sim-window"></div>
-
-                <div class="sim-sofa">
-                    SOFA
-                </div>
-
-                <div class="sim-table">
-                    TABLE
-                </div>
-
-                <div class="sim-plant">
-                    🌿
-                </div>
-
-                <div class="sim-path">
-                    AI WALKING PATH
-                </div>
-
+            <!-- DB-backed top-down CAD preview -->
+            <div class="what-if-room showcase-cad-room">
+                <canvas id="homepageLayoutCanvas" class="homepage-plan-canvas" aria-label="Top-down furniture layout generated from the selected room preset"></canvas>
+                <div class="cad-room-badge">CURATED ROOM PLAN · SAT + A* CHECKS</div>
+                {% if showcase_presets %}
+                <div class="cad-room-caption">{{ showcase_presets[0].name }} · {{ (showcase_presets[0].circulation * 100)|round|int }}% reachable</div>
+                {% endif %}
             </div>
-
 
             <!-- RESULTS -->
 
             <div class="simulation-results">
 
                 <span class="result-label">
-                    LIVE AI SIMULATION
+                    CURRENT VERIFIED PRESET
                 </span>
 
                 <h3>
-                    Move the sofa
+                    {{ showcase_presets[0].name if showcase_presets else 'Room layout overview' }}
                 </h3>
 
                 <p class="simulation-description">
-                    SmartSpace evaluates the new arrangement
-                    before you apply it.
+                    These measurements come from the saved floorplan geometry. Open it in Studio to edit the layout and recalculate them.
                 </p>
 
 
                 <div class="result-item">
 
                     <span>
-                        Circulation
+                        A* reachability
                     </span>
 
                     <strong>
-                        87 → 94
+                        {{ (showcase_presets[0].circulation * 100)|round|int }}%
                     </strong>
 
                 </div>
@@ -524,11 +364,11 @@
                 <div class="result-item">
 
                     <span>
-                        Space Utilization
+                        Ergonomic layout score
                     </span>
 
                     <strong>
-                        76 → 81%
+                        {{ showcase_presets[0].score|round|int }}%
                     </strong>
 
                 </div>
@@ -537,11 +377,11 @@
                 <div class="result-item">
 
                     <span>
-                        Collision Risk
+                        SAT collision pairs
                     </span>
 
                     <strong class="safe">
-                        LOW
+                        {{ showcase_presets[0].collision_count }}
                     </strong>
 
                 </div>
@@ -550,23 +390,25 @@
                 <div class="result-item">
 
                     <span>
-                        Budget Impact
+                        Furniture estimate
                     </span>
 
                     <strong>
-                        ₹0
+                        ₹{{ "{:,.0f}".format(showcase_presets[0].estimated_cost) }} / ₹{{ "{:,.0f}".format(showcase_presets[0].budget) }}
                     </strong>
 
                 </div>
 
 
-                <a href="/create-project" class="simulation-button">
+                <a href="{{ '/studio?preset=' ~ showcase_presets[0].id if showcase_presets else '/create-project' }}" class="simulation-button">
                     Try a room layout <span>→</span>
                 </a>
 
             </div>
 
         </div>
+
+        <div id="homepage-layout-cards" class="smartspace-react-slot" data-layout-card-grid="featured"></div>
 
     </section>
 
@@ -600,36 +442,16 @@
 
         <div class="day-night-panel">
 
-            <!-- LIGHTING ROOM -->
-
-            <div class="lighting-room lighting-morning">
-
-                <div class="lighting-window"></div>
-
-                <div class="lighting-sofa">
-                    SOFA
-                </div>
-
-                <div class="lighting-table">
-                    TABLE
-                </div>
-
-                <div class="lighting-plant">
-                    🌿
-                </div>
-
-                <div class="lighting-lamp">
-                    💡
-                </div>
-
+            <!-- Local interior photography with interactive lighting filters -->
+            <div class="lighting-room lighting-morning lighting-photo-room">
+                {% if showcase_presets %}
+                <img class="lighting-photo" src="{{ showcase_presets[0].thumbnail }}" alt="{{ showcase_presets[0].name }} under changing light">
+                {% else %}
+                <img class="lighting-photo" src="{{ url_for('static', filename='images/interior-hero.jpg') }}" alt="Interior room under changing light">
+                {% endif %}
                 <div class="lighting-overlay"></div>
-
-                <div class="lighting-time">
-                    08:00 AM
-                </div>
-
+                <div class="lighting-time">08:00 AM</div>
             </div>
-
 
             <!-- LIGHTING CONTROLS -->
 
@@ -726,13 +548,15 @@
                 </div>
 
 
-                <a href="/create-project" class="lighting-button">
+                <a href="{{ url_for('views.create_project_page') }}" class="lighting-button">
                     Plan your room lighting <span>→</span>
                 </a>
 
             </div>
 
         </div>
+
+        <div id="lighting-layout-cards" class="smartspace-react-slot" data-layout-card-grid="lighting"></div>
 
     </section>
 
@@ -763,7 +587,7 @@
                 interior layouts.
             </p>
 
-            <a href="/create-project"
+            <a href="{{ url_for('views.create_project_page') }}"
                class="design-button">
                 Create My Space →
             </a>
@@ -827,7 +651,11 @@
          LIGHTING JAVASCRIPT
     ====================================================== -->
 
-    <script src="{{ url_for('static', filename='js/lighting.js', v='20260928-consistency') }}"></script>
+    <script>window.SMARTSPACE_SHOWCASE_PRESETS = {{ showcase_presets|tojson }};</script>
+    <script defer src="{{ url_for('static', filename='js/furniture_renderer.js', v='20260928-shared-furniture-v1') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/home-showcase.js', v='20260928-realistic-plan-v3') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/lighting.js', v='20260928-database-gallery') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='dist/smartspace-frontend.js', v='20260929-v2') }}"></script>
 
 </body>
 

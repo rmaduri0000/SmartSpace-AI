@@ -1,148 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Create Project | SmartSpace AI</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css', v='20260928-consistency') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Set up your room, style, budget and photo in four clear steps.">
+  <title>Create a design · SmartSpace AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='20260928-auth-wizard') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dist/smartspace-frontend.css', v='20260930-yolo-photo') }}">
 </head>
-
 <body class="site-page page-project">
-
-    {% include "_site_header.html" %}
-
-
-    <!-- CREATE PROJECT -->
-    <main class="create-project-page">
-
-        <div class="create-project-container">
-
-            <div class="create-project-label">STEP 01 <span>PROJECT BASICS</span></div>
-
-            <h1>
-                Create your <em>dream space.</em>
-            </h1>
-
-            <p class="create-project-subtitle">
-                Set the direction for your room. You can fine-tune dimensions, materials and budget in the next step.
-            </p>
-
-
-            <form id="projectForm">
-
-                <!-- PROJECT NAME -->
-                <div class="form-group">
-                    <label for="project_name">
-                        Project Name
-                    </label>
-
-                    <input
-                        type="text"
-                        id="project_name"
-                        name="name"
-                        value="My Modern Living Room"
-                        required
-                    >
-                </div>
-
-
-                <!-- ROOM TYPE -->
-                <div class="form-group">
-                    <label for="room_type">
-                        Room Type
-                    </label>
-
-                    <select
-                        id="room_type"
-                        name="roomType"
-                        required
-                    >
-                        <option value="Living Room" selected>Living Room</option>
-                        <option value="Bedroom">Bedroom</option>
-                        <option value="Master Bedroom">Master Bedroom</option>
-                        <option value="Kitchen">Kitchen</option>
-                        <option value="Bathroom">Bathroom</option>
-                        <option value="Dining Room">Dining Room</option>
-                        <option value="Office">Home Office</option>
-                    </select>
-                </div>
-
-
-                <!-- DESCRIPTION -->
-                <div class="form-group">
-                    <label for="description">
-                        Project Description
-                    </label>
-
-                    <textarea
-                        id="description"
-                        name="description"
-                        rows="5"
-                        placeholder="Describe your ideal room..."
-                    >Need a spacious and ergonomic layout</textarea>
-                </div>
-
-
-                <!-- BUTTON -->
-                <button
-                    id="createProjectButton"
-                    type="submit"
-                    class="create-project-button"
-                >
-                    Continue to room details
-                    <span>→</span>
-                </button>
-
-                <p id="projectFormError" class="form-error" role="alert" hidden></p>
-
-            </form>
-
-        </div>
-
-    </main>
-
-    {% include "_site_footer.html" %}
-
-    <script>
-        const projectForm = document.getElementById('projectForm');
-        const projectButton = document.getElementById('createProjectButton');
-        const projectError = document.getElementById('projectFormError');
-
-        projectForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            projectError.hidden = true;
-            projectButton.disabled = true;
-            projectButton.innerHTML = 'Saving your project…';
-
-            const values = Object.fromEntries(new FormData(projectForm));
-            try {
-                const response = await fetch('/api/projects', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(values)
-                });
-                const result = await response.json();
-                if (!response.ok || !result.success) {
-                    throw new Error(result.error || 'We could not save this project. Please try again.');
-                }
-                try {
-                    localStorage.setItem('smartspace_current_project', JSON.stringify(result.project));
-                } catch (storageError) {
-                    try { sessionStorage.setItem('smartspace_current_project', JSON.stringify(result.project)); }
-                    catch (_sessionError) { console.warn('Project details could not be persisted in this browser.', storageError); }
-                }
-                window.location.assign('/room-details');
-            } catch (error) {
-                projectError.textContent = error.message || 'Unable to save the project. Check your connection and try again.';
-                projectError.hidden = false;
-                projectButton.disabled = false;
-                projectButton.innerHTML = 'Continue to room details <span>→</span>';
-            }
-        });
-    </script>
-
+  {% include "_site_header.html" %}
+  <main id="project-wizard-root" data-initial-step="{{ initial_step }}"></main>
+  {% include "_site_footer.html" %}
+  <script type="module" src="{{ url_for('static', filename='dist/smartspace-frontend.js', v='20260930-yolo-photo') }}"></script>
 </body>
 </html>

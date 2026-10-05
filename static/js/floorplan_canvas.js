@@ -2,7 +2,7 @@
  * SmartSpace AI - 2D Floorplan Interactive Canvas Engine
  * Supports:
  * - Architectural room boundary and grid rendering
- * - Furniture OBB rendering with rotation, labels, and orientation cues
+ * - Textured top-down furniture assets drawn inside SAT-aligned OBB bounds
  * - Interactive dragging, selecting, and rotating of furniture
  * - A* circulation walking paths rendering (green dashed paths)
  * - Ergonomic clearance halos (0.75m walking buffers)
@@ -36,6 +36,14 @@ class FloorplanCanvas {
     this.showWalkways = true;
     this.showClearances = true;
     this.showGrid = true;
+
+    // Kept for the inventory list's small category swatches; the floorplan
+    // itself is rendered from textured SVGs below, never from these colors.
+    this.colorMap = {
+      bed: '#688a6c', sofa: '#3d7763', chair: '#72958b', table: '#bd8050',
+      wardrobe: '#9a7859', desk: '#597b64', tv: '#42645a', cabinet: '#a97155',
+      door: '#bd8050', window: '#7da99b'
+    };
     
     // Interaction state
     this.selectedItem = null;
@@ -45,18 +53,8 @@ class FloorplanCanvas {
     this.itemStartX = 0;
     this.itemStartY = 0;
     
-    this.colorMap = {
-      bed: '#3b82f6',
-      sofa: '#8b5cf6',
-      chair: '#06b6d4',
-      table: '#10b981',
-      wardrobe: '#f59e0b',
-      desk: '#6366f1',
-      tv: '#ec4899',
-      cabinet: '#f97316',
-      door: '#ef4444',
-      window: '#14b8a6'
-    };
+    this.furnitureAssets = {};
+    this.loadFurnitureAssets();
     
     this.initEvents();
     this.resizeCanvas();
@@ -129,6 +127,21 @@ class FloorplanCanvas {
   setPaths(paths) {
     this.paths = paths || {};
     this.render();
+  }
+
+  loadFurnitureAssets() {
+    const renderer = window.SmartSpaceFurnitureRenderer;
+    if (renderer) {
+      this.furnitureAssets = renderer.loadAll(() => this.render());
+      return;
+    }
+    // Fallback for standalone embed pages that did not include the shared renderer.
+    ['bed', 'sofa', 'chair', 'table', 'wardrobe', 'desk', 'tv', 'cabinet', 'door', 'window'].forEach((type) => {
+      const image = new Image();
+      image.onload = () => this.render();
+      image.src = `/static/assets/furniture/${type}.svg`;
+      this.furnitureAssets[type] = image;
+    });
   }
 
   worldToScreen(x, y) {
@@ -356,7 +369,7 @@ class FloorplanCanvas {
   drawGrid() {
     const ctx = this.ctx;
     ctx.save();
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.strokeStyle = 'rgba(39, 82, 57, 0.075)';
     ctx.lineWidth = 1;
 
     // Grid spacing: 0.5m
@@ -390,20 +403,20 @@ class FloorplanCanvas {
 
     ctx.save();
     // Floor background
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = '#fbfaf5';
     ctx.fillRect(tl.sx, tl.sy, w, h);
 
     // Wall perimeter
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#315c47';
+    ctx.lineWidth = 3;
     ctx.strokeRect(tl.sx, tl.sy, w, h);
 
     // Metric dimensions labels (in meters and feet)
     const wFt = (this.roomWidth / 0.3048).toFixed(1);
     const lFt = (this.roomLength / 0.3048).toFixed(1);
 
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '11px Inter, sans-serif';
+    ctx.fillStyle = '#75877b';
+    ctx.font = '600 10px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(`${this.roomWidth.toFixed(1)}m (${wFt} ft)`, tl.sx + w / 2, tl.sy - 10);
     ctx.save();
@@ -429,14 +442,14 @@ class FloorplanCanvas {
       pEnd = this.worldToScreen(offset + dw, 0);
       swingCenter = pStart;
 
-      ctx.strokeStyle = '#ef4444';
+      ctx.strokeStyle = '#bd8050';
       ctx.lineWidth = 6;
       ctx.beginPath();
       ctx.moveTo(pStart.sx, pStart.sy);
       ctx.lineTo(pEnd.sx, pEnd.sy);
       ctx.stroke();
 
-      ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+      ctx.strokeStyle = 'rgba(189, 128, 80, 0.42)';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
@@ -447,14 +460,14 @@ class FloorplanCanvas {
       pEnd = this.worldToScreen(0, offset + dw);
       swingCenter = pStart;
 
-      ctx.strokeStyle = '#ef4444';
+      ctx.strokeStyle = '#bd8050';
       ctx.lineWidth = 6;
       ctx.beginPath();
       ctx.moveTo(pStart.sx, pStart.sy);
       ctx.lineTo(pEnd.sx, pEnd.sy);
       ctx.stroke();
 
-      ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+      ctx.strokeStyle = 'rgba(189, 128, 80, 0.42)';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
@@ -463,7 +476,7 @@ class FloorplanCanvas {
     } else {
       pStart = this.worldToScreen(offset, this.roomLength);
       pEnd = this.worldToScreen(offset + dw, this.roomLength);
-      ctx.strokeStyle = '#ef4444';
+      ctx.strokeStyle = '#bd8050';
       ctx.lineWidth = 6;
       ctx.beginPath();
       ctx.moveTo(pStart.sx, pStart.sy);
@@ -471,7 +484,7 @@ class FloorplanCanvas {
       ctx.stroke();
     }
 
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = '#a96f48';
     ctx.font = 'bold 10px Inter';
     ctx.fillText('ENTRY DOOR', pStart.sx + 8, pStart.sy + 16);
     ctx.restore();
@@ -492,8 +505,8 @@ class FloorplanCanvas {
 
         // Natural daylight gradient cone
         const grad = ctx.createLinearGradient(0, p1.sy, 0, p1.sy + 60);
-        grad.addColorStop(0, 'rgba(20, 184, 166, 0.35)');
-        grad.addColorStop(1, 'rgba(20, 184, 166, 0.0)');
+        grad.addColorStop(0, 'rgba(125, 169, 155, 0.22)');
+        grad.addColorStop(1, 'rgba(125, 169, 155, 0.0)');
         ctx.fillStyle = grad;
         ctx.beginPath();
         ctx.moveTo(p1.sx, p1.sy);
@@ -504,7 +517,7 @@ class FloorplanCanvas {
         ctx.fill();
 
         // Window bar
-        ctx.strokeStyle = '#14b8a6';
+        ctx.strokeStyle = '#7da99b';
         ctx.lineWidth = 6;
         ctx.beginPath();
         ctx.moveTo(p1.sx, p1.sy);
@@ -523,7 +536,7 @@ class FloorplanCanvas {
     for (const [itemId, pathCoords] of Object.entries(this.paths)) {
       if (!pathCoords || pathCoords.length < 2) continue;
 
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.7)';
+      ctx.strokeStyle = 'rgba(74, 137, 91, 0.8)';
       ctx.lineWidth = 2.5;
       ctx.setLineDash([5, 5]);
 
@@ -548,7 +561,6 @@ class FloorplanCanvas {
       const wPx = (item.width || 1.0) * this.scale;
       const dPx = (item.depth || 1.0) * this.scale;
       const rotRad = ((item.rotation || 0) * Math.PI) / 180;
-      const color = this.colorMap[item.type] || '#3b82f6';
       const isSelected = this.selectedItem && this.selectedItem.id === item.id;
 
       ctx.save();
@@ -557,7 +569,7 @@ class FloorplanCanvas {
 
       // Ergonomic Clearance Zone halo (0.75m walking aisle)
       if (this.showClearances) {
-        ctx.strokeStyle = isSelected ? 'rgba(56, 189, 248, 0.35)' : 'rgba(255, 255, 255, 0.08)';
+        ctx.strokeStyle = isSelected ? 'rgba(189, 128, 80, 0.55)' : 'rgba(66, 94, 69, 0.2)';
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
         const clearPx = 0.5 * this.scale;
@@ -565,43 +577,45 @@ class FloorplanCanvas {
         ctx.setLineDash([]);
       }
 
-      // Drop shadow
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-      ctx.shadowBlur = 8;
-      ctx.shadowOffsetX = 3;
-      ctx.shadowOffsetY = 3;
-
-      // Main furniture box
-      ctx.fillStyle = color;
-      ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
-
-      // Border highlight or Selection ring
-      ctx.shadowColor = 'transparent';
-      if (isSelected) {
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(-wPx / 2 - 2, -dPx / 2 - 2, wPx + 4, dPx + 4);
+      // The bitmap/SVG artwork is stretched to this exact footprint before the
+      // same world transform used for the SAT box, so texture and collision
+      // coordinates share x/y/width/depth/rotation without changing the solver.
+      const renderer = window.SmartSpaceFurnitureRenderer;
+      const asset = this.furnitureAssets[item.type];
+      if (renderer && renderer.drawLocal(ctx, item.type, wPx, dPx)) {
+        // Shared renderer applies the same local asset-to-SAT footprint mapping
+        // as the homepage curated plan and the 133-D Studio canvas.
+      } else if (asset && asset.complete && asset.naturalWidth > 0) {
+        ctx.drawImage(asset, -wPx / 2, -dPx / 2, wPx, dPx);
       } else {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+        // Keep the editor legible while local SVG assets are still loading; do
+        // not fall back to the old solid-color furniture blocks.
+        ctx.strokeStyle = 'rgba(48, 78, 56, 0.62)';
         ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 3]);
         ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#314936';
+        ctx.font = '600 10px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText((item.type || 'item').toUpperCase(), 0, 0);
       }
 
-      // Orientation indicator: front arrow
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.moveTo(0, -dPx / 2 + 6);
-      ctx.lineTo(-5, -dPx / 2 + 14);
-      ctx.lineTo(5, -dPx / 2 + 14);
-      ctx.closePath();
-      ctx.fill();
-
-      // Label
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 11px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText((item.type || 'item').toUpperCase(), 0, 0);
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      if (isSelected) {
+        ctx.strokeStyle = '#bd8050';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([]);
+        ctx.strokeRect(-wPx / 2 - 2, -dPx / 2 - 2, wPx + 4, dPx + 4);
+      } else {
+        ctx.strokeStyle = 'rgba(63, 73, 59, 0.34)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+      }
 
       ctx.restore();
     }

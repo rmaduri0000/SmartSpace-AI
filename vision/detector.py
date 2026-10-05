@@ -1,13 +1,37 @@
 """
-End-to-End Room Image Detection & State Conversion Pipeline
-Bridges YOLO Computer Vision Front-End with the DQN Spatial Environment.
-Converts 2D image bounding boxes into a quantified metric 3D room state.
+SmartSpace AI — Vision-to-State Coordinate Mapping Pipeline
+=============================================================
+Bridges the gap between **2D image pixels** from YOLO detections and the
+**normalised real-world metric dimensions** consumed by the DQN environment.
+
+Pipeline stages
+~~~~~~~~~~~~~~~
+1. **Image ingestion** — Accepts ``PIL.Image``, raw bytes, or a file path.
+2. **YOLO inference** — Delegates to ``vision.yolo_model.YOLOInteriorDetector``
+   for bounding-box detection.
+3. **Pixel → metric mapping** — Each detection's ``(x1, y1, x2, y2)`` pixel
+   bbox is mapped into the room's metric coordinate system using the
+   user-supplied ``room_dimensions`` (width, length in metres) and the
+   image resolution.
+4. **Annotated image** — Draws coloured bounding boxes (palette from
+   ``config.CLASS_COLORS``) and class labels, then encodes the result as a
+   JPEG Base64 string for the frontend preview.
+5. **Room state assembly** — Produces a dict of ``initial_furniture``,
+   ``door``, and ``windows`` ready to be fed into ``InteriorEnv``.
+
+Connection to the rest of the project
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Instantiated once in ``app.py`` as the global ``VISION_EXTRACTOR`` singleton.
+``routes/projects.py`` calls ``process_room_image`` when the user uploads a
+room photo in the project wizard.  The returned furniture list and 133-D
+state vector are then passed to the studio canvas.
 """
 import io
 import os
 import base64
+import logging
 from typing import Dict, Any, List, Tuple
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageOps
 
 from config import FURNITURE_SPECS, CLASS_COLORS
 from vision.yolo_model import YOLOInteriorDetector
@@ -17,10 +41,40 @@ class VisionStateExtractor:
     Coordinates YOLO detection on an uploaded room photo,
     draws bounding box overlays, and converts detections into an interior environment state.
     """
-    def __init__(self, model_path: str = "data/models/yolo_interior.pt"):
-        self.detector = YOLOInteriorDetector(model_path)
+    def __init__(self, model_path: str = "data/models/yolo_interior.pt", auto_download: bool = True):
+        """Load local custom weights or automatically fetch a pretrained detector."""
+        self.detector = YOLOInteriorDetector(model_path, auto_download=auto_download)
         
     def process_room_image(self, image_input, room_dimensions: Dict[str, float] = None) -> Dict[str, Any]:
+        """Return real image detections or explicit, recoverable fallback metadata.
+
+        Input may be a PIL image, encoded bytes, data URL or local path; room
+        dimensions are metres. On decoding or inference failure, furniture is
+        empty so the caller can use its room-type preset. No boxes are invented.
+        """
+        try:
+            result = self._process_room_image(image_input, room_dimensions)
+            has_furniture = bool(result["room_state"]["initial_furniture"])
+            result["fallback_used"] = not has_furniture
+            result["fallback_reason"] = (
+                "YOLO weights are unavailable." if not self.detector.available else
+                "No furniture objects were detected." if not has_furniture else None
+            )
+            return result
+        except Exception:
+            logging.getLogger(__name__).exception("Room photo processing failed; using starter furniture")
+            return {
+                "success": True, "detected_count": 0, "detections": [],
+                "annotated_image": None,
+                "room_state": {"initial_furniture": []},
+                "model_available": self.detector.available,
+                "model_backend": self.detector.engine_type,
+                "model_name": self.detector.model_path.name,
+                "fallback_used": True,
+                "fallback_reason": "The room photo could not be processed. Starter furniture was used.",
+            }
+
+    def _process_room_image(self, image_input, room_dimensions: Dict[str, float] = None) -> Dict[str, Any]:
         """
         Accepts PIL.Image, file path, or bytes.
         Returns:
@@ -30,24 +84,36 @@ class VisionStateExtractor:
         """
         if isinstance(image_input, str):
             if os.path.exists(image_input):
-                img = Image.open(image_input).convert("RGB")
+                image_source = image_input
             elif image_input.startswith("data:image"):
                 # Data URL
-                header, encoded = image_input.split(",", 1)
-                data = base64.b64decode(encoded)
-                img = Image.open(io.BytesIO(data)).convert("RGB")
+                _, encoded = image_input.split(",", 1)
+                data = base64.b64decode(encoded, validate=True)
+                if len(data) > 10 * 1024 * 1024:
+                    raise ValueError("Photo exceeds 10 MB.")
+                image_source = io.BytesIO(data)
             else:
-                img = Image.new("RGB", (640, 640), (240, 240, 240))
+                raise ValueError("Expected a local image path or data URL.")
         elif isinstance(image_input, bytes):
-            img = Image.open(io.BytesIO(image_input)).convert("RGB")
+            if len(image_input) > 10 * 1024 * 1024:
+                raise ValueError("Photo exceeds 10 MB.")
+            image_source = io.BytesIO(image_input)
         else:
-            img = image_input.convert("RGB")
+            image_source = None
+
+        if image_source is not None:
+            with Image.open(image_source) as source:
+                if source.format not in {"JPEG", "PNG"}:
+                    raise ValueError("Choose a JPG or PNG image.")
+                if source.width * source.height > 20_000_000:
+                    raise ValueError("Photo exceeds 20 megapixels.")
+                img = ImageOps.exif_transpose(source).convert("RGB")
+        else:
+            img = ImageOps.exif_transpose(image_input).convert("RGB")
 
         # Keep inference responsive and the studio's persisted preview compact.
         img.thumbnail((1600, 1200), Image.Resampling.LANCZOS)
             
-        img_w, img_h = img.size
-        
         # 1. Run YOLO object detection
         detections = self.detector.predict(img)
         

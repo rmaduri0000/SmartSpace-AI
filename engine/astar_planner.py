@@ -1,7 +1,31 @@
 """
-A* Circulation & Pathfinding Engine for SmartSpace AI
-Discretizes room layout into an occupancy grid, calculates circulation paths
-from entry doors to key furniture items, and computes architectural circulation scores.
+SmartSpace AI — A* Pathfinding & Circulation Planner
+=====================================================
+Discretises the room floor into a **15 cm occupancy grid** and runs an A*
+graph-search algorithm to find the shortest walking path from the entry door
+to each furniture item's interaction zone.
+
+Algorithm
+~~~~~~~~~
+1. **Grid construction** — The room ``[0, W] × [0, L]`` is divided into
+   cells of ``grid_res`` metres (default 0.15 m ≈ 15 cm).
+2. **Obstacle stamping** — Each furniture OBB is rasterised onto the grid
+   by iterating over cells that fall inside the rotated corners returned by
+   ``engine.sat_collision.get_rotated_corners``.
+3. **A* search** — For every furniture piece the planner finds the lowest-
+   cost path from the door cell to the nearest free cell adjacent to the
+   item's bounding box, using Chebyshev (8-connected) neighbours and an
+   octile heuristic.
+4. **Circulation ratio** — ``reachable / total`` gives a 0–1 score used as
+   a reward term by the MDP environment and a validation gate by the
+   recommendation engine.
+
+Connection to the rest of the project
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``engine/interior_env.py`` instantiates ``AStarPlanner`` inside
+``evaluate_layout()`` to compute the circulation ratio and identify
+unreachable items.  The A* waypoints are also serialised into the layout
+JSON so the frontend studio can render the green walking path.
 """
 import heapq
 import math
@@ -11,10 +35,16 @@ import numpy as np
 from engine.spatial_utils import get_rotated_corners, check_obb_collision
 
 class AStarPlanner:
+    """Map metric furniture footprints to a grid and return walkable paths.
+
+    Room dimensions and cell resolution are metres. The binary occupancy grid
+    uses (row, column) indices; public paths use room-world (x, y) coordinates.
+    """
+
     def __init__(self, room_width: float, room_length: float, grid_res: float = 0.15):
-        """
-        grid_res: resolution of each grid cell in meters (default 0.15m = 15cm).
-        """
+        """Initialize an empty grid from positive, finite metre dimensions."""
+        if not all(math.isfinite(value) and value > 0 for value in (room_width, room_length, grid_res)):
+            raise ValueError("Room dimensions and grid resolution must be positive finite numbers.")
         self.room_w = room_width
         self.room_l = room_length
         self.res = grid_res
@@ -23,20 +53,24 @@ class AStarPlanner:
         self.grid = np.zeros((self.rows, self.cols), dtype=np.uint8) # 0 = free, 1 = obstacle
         
     def world_to_grid(self, x: float, y: float) -> Tuple[int, int]:
+        """Return clamped (row, column) indices for a world point in metres."""
         c = int(np.clip(x / self.res, 0, self.cols - 1))
         r = int(np.clip(y / self.res, 0, self.rows - 1))
         return (r, c)
         
     def grid_to_world(self, r: int, c: int) -> Tuple[float, float]:
+        """Return the cell-centre (x, y) in metres, clipped to room bounds."""
         x = (c + 0.5) * self.res
         y = (r + 0.5) * self.res
         return (min(x, self.room_w), min(y, self.room_l))
 
     def build_occupancy_grid(self, furniture_list: List[Dict[str, Any]], 
                              inflation_margin: float = 0.10) -> np.ndarray:
-        """
-        Fills the occupancy grid based on placed furniture items.
-        inflation_margin adds a buffer for human body clearance.
+        """Rasterize furniture dictionaries and return the binary occupancy grid.
+
+        Each item supplies x/y, width/depth in metres and rotation in degrees.
+        ``inflation_margin`` increases the full width/depth, providing half
+        that extra clearance on each side of the rectangle.
         """
         self.grid.fill(0)
         
@@ -59,6 +93,10 @@ class AStarPlanner:
             
             for r in range(r_start, r_end + 1):
                 for c in range(c_start, c_end + 1):
+                    # **Boolean early exit:** an occupied cell needs no more
+                    # SAT tests against additional furniture footprints.
+                    if self.grid[r, c]:
+                        continue
                     wx, wy = self.grid_to_world(r, c)
                     cell_box = np.array([
                         [wx - self.res/2, wy - self.res/2],
@@ -72,9 +110,10 @@ class AStarPlanner:
         return self.grid
 
     def plan_path(self, start_pos: Tuple[float, float], goal_pos: Tuple[float, float]) -> Optional[List[Tuple[float, float]]]:
-        """
-        Calculates the shortest walkable path between start and goal using A*.
-        Returns a list of world-space (x, y) coordinates, or None if blocked.
+        """Return a shortest grid path between metre coordinates, or None.
+
+        Occupied endpoints snap to a nearby free cell. Returned coordinates
+        are cell centres; diagonals cannot pass between touching obstacles.
         """
         start_rc = self.world_to_grid(start_pos[0], start_pos[1])
         goal_rc = self.world_to_grid(goal_pos[0], goal_pos[1])
@@ -95,9 +134,11 @@ class AStarPlanner:
         g_score = {start_rc: 0.0}
         
         # 8-connectivity with diagonal movement cost
+        diagonal_cost = math.sqrt(2.0)
         neighbors = [
             (-1, 0, 1.0), (1, 0, 1.0), (0, -1, 1.0), (0, 1, 1.0),
-            (-1, -1, 1.414), (-1, 1, 1.414), (1, -1, 1.414), (1, 1, 1.414)
+            (-1, -1, diagonal_cost), (-1, 1, diagonal_cost),
+            (1, -1, diagonal_cost), (1, 1, diagonal_cost)
         ]
         
         while open_set:
@@ -121,18 +162,27 @@ class AStarPlanner:
                 if 0 <= nr < self.rows and 0 <= nc < self.cols:
                     if self.grid[nr, nc] == 1:
                         continue
+                    # **No corner cutting:** both adjacent orthogonal cells
+                    # must be free before taking a diagonal step.
+                    if dr != 0 and dc != 0 and (self.grid[r, nc] or self.grid[nr, c]):
+                        continue
                     tentative_g = current_g + (weight * self.res)
                     if tentative_g < g_score.get((nr, nc), float('inf')):
                         came_from[(nr, nc)] = curr
                         g_score[(nr, nc)] = tentative_g
-                        # Heuristic: Euclidean distance
-                        h = math.sqrt((nr - goal_rc[0])**2 + (nc - goal_rc[1])**2) * self.res
-                        heapq.heappush(open_set, (tentative_g + h, tentative_g, nr, nc))
+                        # **A* heuristic:** straight-line distance cannot exceed
+                        # a walkable route with axial cost 1 and diagonal sqrt(2).
+                        # Multiply grid distance by resolution to match g's metres.
+                        row_distance = nr - goal_rc[0]
+                        column_distance = nc - goal_rc[1]
+                        remaining_distance = math.hypot(row_distance, column_distance) * self.res
+                        estimated_total_cost = tentative_g + remaining_distance  # f = g + h
+                        heapq.heappush(open_set, (estimated_total_cost, tentative_g, nr, nc))
                         
         return None # No path found
 
     def _find_nearest_free(self, rc: Tuple[int, int], search_radius: int = 4) -> Optional[Tuple[int, int]]:
-        """Finds nearest walkable cell within search_radius."""
+        """Return the nearest free (row, column) in a cell-radius square, or None."""
         r, c = rc
         best_dist = float('inf')
         best_rc = None
@@ -149,10 +199,11 @@ class AStarPlanner:
 
     def evaluate_circulation(self, door_pos: Tuple[float, float], 
                              furniture_items: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Evaluates circulation connectivity from door to every piece of furniture.
+        """Measure door-to-furniture connectivity using metre coordinates.
+
+        Furniture dictionaries provide IDs, types and x/y target positions.
         Returns:
-            - connectivity_score: float (0.0 to 1.0)
+            - circulation_score: float (0.0 to 1.0)
             - paths: Dict[item_id, list_of_coords]
             - unreachable_items: list of IDs
         """
