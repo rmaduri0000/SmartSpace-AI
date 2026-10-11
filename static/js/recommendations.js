@@ -23,11 +23,13 @@
 
   function canonicalRoom(layout) {
     const name = String(layout?.room_type || layout?.roomType || '').toLowerCase();
+    if (name.includes('master')) return 'master_bedroom';
     if (name.includes('bed')) return 'bedroom';
-    if (name.includes('office') || name.includes('work')) return 'home_office';
+    if (name.includes('office') || name.includes('work') || name.includes('study')) return 'home_office';
     if (name.includes('dining')) return 'dining_room';
     if (name.includes('kitchen')) return 'kitchen';
     if (name.includes('bath')) return 'bathroom';
+    if (name.includes('studio')) return 'studio_apartment';
     return 'living_room';
   }
 

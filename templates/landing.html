@@ -9,7 +9,7 @@
     <title>SmartSpace AI | Interior Design</title>
 
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css', v='20260928-dual-engine-modal') }}">
+          href="{{ url_for('static', filename='css/style.css', v='20261011-showcase-large-v2') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/smartspace-frontend.css', v='20260929-v2') }}">
 </head>
 
@@ -148,7 +148,9 @@
             {% for preset in showcase_presets %}
             <article class="style-item showcase-item {{ 'style-large' if loop.first else '' }}">
                 <div class="style-image showcase-image">
-                    <img class="style-photo" src="{{ preset.thumbnail }}" alt="{{ preset.name }} interior design photograph" loading="lazy" decoding="async">
+                    <a class="showcase-image-link" href="/studio?preset={{ preset.id }}" aria-label="Open {{ preset.name }} in Studio" title="Open {{ preset.name }} in Studio">
+                        <img class="style-photo" src="{{ preset.thumbnail }}" alt="{{ preset.name }} interior design photograph" loading="lazy" decoding="async">
+                    </a>
                     <div class="showcase-image-tags"><span>{{ preset.style|title }}</span><span>{{ preset.score|round|int }}% ergonomic score</span></div>
                 </div>
                 <div class="style-info showcase-info">

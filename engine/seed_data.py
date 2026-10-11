@@ -31,6 +31,16 @@ PHOTO_BY_STYLE = {
     "industrial": "/static/images/interior-luxury.jpg",
     "contemporary": "/static/images/interior-hero.jpg",
 }
+PHOTO_BY_ROOM = {
+    "living_room": "/static/images/interior-modern.jpg",
+    "bedroom": "/static/images/interior-minimal-bedroom.jpg",
+    "master_bedroom": "/static/images/interior-master-bedroom.jpg",
+    "home_office": "/static/images/interior-home-office.jpg",
+    "dining_room": "/static/images/interior-dining.jpg",
+    "kitchen": "/static/images/interior-kitchen.jpg",
+    "bathroom": "/static/images/interior-bathroom.jpg",
+    "studio_apartment": "/static/images/interior-studio.jpg",
+}
 
 def _catalog_rows() -> Iterable[Dict[str, Any]]:
     """Yield named retail-scale variants with explicit dimensions and fit zones.
@@ -88,6 +98,18 @@ def _catalog_rows() -> Iterable[Dict[str, Any]]:
         ("cabinet-bedside", "Bedside Cabinet", "cabinet", 0.45, 0.40, 0.55, 0.40, 0.15, 5600, "minimalist", "flexible", "One-drawer bedside cabinet sized to sit beside a queen bed."),
         ("cabinet-glass-book", "Glass-Front Book Cabinet", "cabinet", 0.80, 0.38, 1.80, 0.60, 0.16, 16400, "modern", "essential", "Narrow book and display cabinet with glazed upper doors."),
         ("cabinet-modular-storage", "Modular Storage Cabinet", "cabinet", 1.00, 0.45, 1.20, 0.65, 0.18, 13200, "industrial", "essential", "Stackable closed cabinet for office, living-room or utility storage."),
+        ("cabinet-split-ac", "Split Air Conditioner (AC)", "cabinet", 0.95, 0.25, 0.35, 0.45, 0.15, 28500, "modern", "essential", "High-efficiency wall-mounted inverter split air conditioner."),
+        ("cabinet-inverter-ac", "Minimalist Inverter AC", "cabinet", 0.90, 0.22, 0.32, 0.40, 0.15, 31000, "minimalist", "essential", "Silent whisper inverter AC unit with hidden display."),
+        ("cabinet-scandi-ac", "Scandinavian Eco AC", "cabinet", 0.92, 0.23, 0.30, 0.42, 0.15, 29800, "scandinavian", "essential", "Energy-star wall air conditioner with eco climate sensor."),
+        ("cabinet-industrial-ac", "Industrial High-Wall AC", "cabinet", 1.05, 0.26, 0.35, 0.50, 0.18, 38500, "industrial", "essential", "Heavy-duty commercial-grade inverter split air conditioner."),
+        ("cabinet-contemporary-ac", "Contemporary Designer AC", "cabinet", 1.00, 0.24, 0.32, 0.45, 0.15, 35000, "contemporary", "essential", "Ultra-slim matte titanium designer split air conditioner."),
+
+        ("cabinet-kitchen-counter", "Modular Kitchen Counter", "cabinet", 1.20, 0.55, 0.90, 0.85, 0.20, 18500, "modern", "essential", "Base modular kitchen counter with stone top, under-sink cabinet, and prep storage."),
+        ("cabinet-pantry-storage", "Pantry Storage Cabinet", "cabinet", 0.65, 0.55, 2.00, 0.75, 0.18, 14500, "scandinavian", "essential", "Tall kitchen pantry cabinet with adjustable shelves and deep spice pullouts."),
+        ("table-kitchen-island", "Kitchen Prep Island", "table", 1.10, 0.65, 0.90, 0.80, 0.30, 12500, "contemporary", "flexible", "Free-standing kitchen preparation island table with hardwood worktop and lower shelf."),
+
+        ("cabinet-vanity-basin", "Vanity Counter & Basin", "cabinet", 0.90, 0.45, 0.85, 0.80, 0.18, 12500, "modern", "essential", "Under-sink bathroom vanity cabinet with integrated wash basin and dual soft-close drawers."),
+        ("cabinet-wall-storage", "Wall Storage Cabinet", "cabinet", 0.70, 0.35, 0.65, 0.60, 0.15, 8500, "minimalist", "essential", "Moisture-resistant mirrored bathroom wall storage cabinet for toiletries and towels."),
 
         ("door-solid-core-entry", "Solid-Core Entry Door", "door", 0.90, 0.12, 2.10, 0.95, 0.10, 15800, "modern", "aperture", "Solid-core hinged door; the front clearance reserves the swing and entry."),
         ("door-shaker-panel", "Shaker-Panel Interior Door", "door", 0.80, 0.10, 2.10, 0.90, 0.08, 11200, "scandinavian", "aperture", "Painted panel door for bedrooms and internal passageways."),
@@ -133,13 +155,14 @@ def _preset_specs() -> list[Dict[str, Any]]:
             "width": 5.4, "length": 4.8, "budget": 85000, "style": "modern",
             "door": {"wall": "south", "offset": 0.25, "width": 0.9},
             "windows": [{"wall": "north", "offset": 1.7, "width": 1.5}],
-            "thumbnail": PHOTO_BY_STYLE["modern"],
-            "description": "Sofa-to-TV sightline, compact coffee table, and an open entry route.",
+            "thumbnail": PHOTO_BY_ROOM["living_room"],
+            "description": "Sofa-to-TV sightline, central coffee table, lounge chair, split AC, and daylight window.",
             "furniture": [
                 {"id": "sofa_1", "type": "sofa", "label": "3-Seater Sofa", "x": 3.35, "y": 3.88, "width": 2.1, "depth": 0.9, "height": 0.85, "rotation": 0, "cost": 14000},
                 {"id": "table_1", "type": "table", "label": "Coffee Table", "x": 3.35, "y": 2.55, "width": 1.0, "depth": 0.6, "height": 0.45, "rotation": 0, "cost": 3500},
                 {"id": "tv_1", "type": "tv", "label": "TV Console", "x": 3.35, "y": 0.45, "width": 1.2, "depth": 0.15, "height": 0.7, "rotation": 0, "cost": 8000},
                 {"id": "chair_1", "type": "chair", "label": "Accent Chair", "x": 1.35, "y": 2.65, "width": 0.6, "depth": 0.6, "height": 0.85, "rotation": 0, "cost": 2200},
+                {"id": "cabinet_1", "type": "cabinet", "label": "Split Air Conditioner (AC)", "x": 0.48, "y": 4.1, "width": 0.95, "depth": 0.25, "height": 0.35, "rotation": 90, "cost": 28500},
             ],
         },
         {
@@ -147,26 +170,45 @@ def _preset_specs() -> list[Dict[str, Any]]:
             "width": 4.8, "length": 4.4, "budget": 65000, "style": "minimalist",
             "door": {"wall": "south", "offset": 0.25, "width": 0.9},
             "windows": [{"wall": "north", "offset": 1.65, "width": 1.5}],
-            "thumbnail": PHOTO_BY_STYLE["minimalist"],
-            "description": "A wall-backed bed, side storage, and a separate desk corner.",
+            "thumbnail": PHOTO_BY_ROOM["bedroom"],
+            "description": "Queen bed, 2-door wardrobe, study desk, ergonomic chair, split AC, and daylight window.",
             "furniture": [
-                {"id": "bed_1", "type": "bed", "label": "Queen Bed", "x": 2.35, "y": 2.85, "width": 1.6, "depth": 2.0, "height": 0.8, "rotation": 0, "cost": 12000},
-                {"id": "wardrobe_1", "type": "wardrobe", "label": "2-Door Wardrobe", "x": 0.55, "y": 2.7, "width": 1.5, "depth": 0.6, "height": 2.1, "rotation": 90, "cost": 8500},
-                {"id": "desk_1", "type": "desk", "label": "Study Desk", "x": 4.0, "y": 3.15, "width": 1.2, "depth": 0.6, "height": 0.75, "rotation": 0, "cost": 4200},
-                {"id": "chair_1", "type": "chair", "label": "Desk Chair", "x": 4.0, "y": 2.35, "width": 0.55, "depth": 0.55, "height": 0.85, "rotation": 180, "cost": 1500},
+                {"id": "bed_1", "type": "bed", "label": "Queen Bed", "x": 2.7, "y": 3.1, "width": 1.6, "depth": 2.0, "height": 0.8, "rotation": 0, "cost": 12000},
+                {"id": "wardrobe_1", "type": "wardrobe", "label": "2-Door Wardrobe", "x": 0.55, "y": 1.6, "width": 1.5, "depth": 0.6, "height": 2.1, "rotation": 90, "cost": 8500},
+                {"id": "desk_1", "type": "desk", "label": "Study Table", "x": 4.0, "y": 1.6, "width": 1.2, "depth": 0.6, "height": 0.75, "rotation": 270, "cost": 4200},
+                {"id": "chair_1", "type": "chair", "label": "Desk Chair", "x": 3.25, "y": 1.6, "width": 0.55, "depth": 0.55, "height": 0.85, "rotation": 90, "cost": 1500},
+                {"id": "cabinet_1", "type": "cabinet", "label": "Split Air Conditioner (AC)", "x": 0.45, "y": 3.7, "width": 0.95, "depth": 0.25, "height": 0.35, "rotation": 90, "cost": 28500},
+            ],
+        },
+        {
+            "id": "showcase-master-bedroom-luxury", "name": "Contemporary Master Bedroom", "room_type": "master_bedroom",
+            "width": 5.4, "length": 4.8, "budget": 95000, "style": "contemporary",
+            "door": {"wall": "south", "offset": 0.8, "width": 0.9},
+            "windows": [{"wall": "north", "offset": 1.7, "width": 1.8}],
+            "thumbnail": PHOTO_BY_ROOM["master_bedroom"],
+            "description": "King bed with dual approach, 3-door almirah, dressing/study table, chair, 55\" TV, and AC.",
+            "furniture": [
+                {"id": "bed_1", "type": "bed", "label": "King Size Bed", "x": 3.1, "y": 3.6, "width": 1.93, "depth": 2.03, "height": 0.82, "rotation": 0, "cost": 32000},
+                {"id": "wardrobe_1", "type": "wardrobe", "label": "3-Door Wardrobe", "x": 0.45, "y": 2.2, "width": 1.5, "depth": 0.6, "height": 2.1, "rotation": 90, "cost": 32500},
+                {"id": "cabinet_1", "type": "cabinet", "label": "Split Air Conditioner (AC)", "x": 0.4, "y": 4.1, "width": 0.95, "depth": 0.25, "height": 0.35, "rotation": 90, "cost": 28500},
+                {"id": "desk_1", "type": "desk", "label": "Study / Dressing Table", "x": 4.8, "y": 1.8, "width": 1.2, "depth": 0.6, "height": 0.75, "rotation": 270, "cost": 9200},
+                {"id": "chair_1", "type": "chair", "label": "Accent Chair", "x": 4.0, "y": 1.8, "width": 0.55, "depth": 0.55, "height": 0.85, "rotation": 90, "cost": 3200},
+                {"id": "tv_1", "type": "tv", "label": "55\" Wall TV", "x": 3.1, "y": 0.35, "width": 1.23, "depth": 0.15, "height": 0.71, "rotation": 0, "cost": 14800},
             ],
         },
         {
             "id": "showcase-home-office-scandi", "name": "Scandinavian Home Office", "room_type": "home_office",
-            "width": 4.2, "length": 3.8, "budget": 42000, "style": "scandinavian",
+            "width": 4.2, "length": 3.8, "budget": 52000, "style": "scandinavian",
             "door": {"wall": "south", "offset": 0.25, "width": 0.9},
             "windows": [{"wall": "north", "offset": 1.1, "width": 1.4}],
-            "thumbnail": PHOTO_BY_STYLE["scandinavian"],
-            "description": "A daylight-aware desk, accessible chair, and wall-side storage.",
+            "thumbnail": PHOTO_BY_ROOM["home_office"],
+            "description": "Ergonomic study table, daylight window, split AC unit, office chair, and bookshelf storage.",
             "furniture": [
-                {"id": "desk_1", "type": "desk", "label": "Work Desk", "x": 2.7, "y": 3.0, "width": 1.3, "depth": 0.65, "height": 0.75, "rotation": 0, "cost": 6000},
-                {"id": "chair_1", "type": "chair", "label": "Ergonomic Chair", "x": 2.7, "y": 2.05, "width": 0.6, "depth": 0.6, "height": 0.85, "rotation": 180, "cost": 4500},
-                {"id": "cabinet_1", "type": "cabinet", "label": "Storage Cabinet", "x": 0.48, "y": 2.55, "width": 1.0, "depth": 0.45, "height": 1.0, "rotation": 90, "cost": 3500},
+                {"id": "desk_1", "type": "desk", "label": "Study Table / Workstation", "x": 2.7, "y": 2.8, "width": 1.3, "depth": 0.65, "height": 0.75, "rotation": 0, "cost": 9200},
+                {"id": "chair_1", "type": "chair", "label": "Ergonomic Office Chair", "x": 2.7, "y": 1.95, "width": 0.6, "depth": 0.6, "height": 0.85, "rotation": 180, "cost": 7800},
+                {"id": "cabinet_1", "type": "cabinet", "label": "Split Air Conditioner (AC)", "x": 0.48, "y": 3.1, "width": 0.95, "depth": 0.25, "height": 0.35, "rotation": 90, "cost": 28500},
+                {"id": "cabinet_2", "type": "cabinet", "label": "Bookshelf Storage", "x": 0.48, "y": 1.5, "width": 1.0, "depth": 0.45, "height": 1.2, "rotation": 90, "cost": 13200},
+                {"id": "chair_2", "type": "chair", "label": "Visitor Chair", "x": 3.6, "y": 1.6, "width": 0.6, "depth": 0.6, "height": 0.85, "rotation": 270, "cost": 3200},
             ],
         },
         {
@@ -174,13 +216,15 @@ def _preset_specs() -> list[Dict[str, Any]]:
             "width": 4.8, "length": 4.3, "budget": 55000, "style": "contemporary",
             "door": {"wall": "south", "offset": 0.25, "width": 0.9},
             "windows": [{"wall": "north", "offset": 1.4, "width": 1.5}],
-            "thumbnail": PHOTO_BY_STYLE["contemporary"],
-            "description": "A compact dining set with space around the table and a sideboard.",
+            "thumbnail": PHOTO_BY_ROOM["dining_room"],
+            "description": "6-seater dining table, surrounding chairs, sideboard storage, and natural light window.",
             "furniture": [
-                {"id": "table_1", "type": "table", "label": "Dining Table", "x": 2.65, "y": 2.45, "width": 1.4, "depth": 0.8, "height": 0.75, "rotation": 0, "cost": 7500},
-                {"id": "chair_1", "type": "chair", "label": "Dining Chair", "x": 1.4, "y": 2.45, "width": 0.45, "depth": 0.45, "height": 0.85, "rotation": 90, "cost": 2200},
-                {"id": "chair_2", "type": "chair", "label": "Dining Chair", "x": 3.9, "y": 2.45, "width": 0.45, "depth": 0.45, "height": 0.85, "rotation": 270, "cost": 2200},
-                {"id": "cabinet_1", "type": "cabinet", "label": "Sideboard", "x": 4.3, "y": 3.55, "width": 1.0, "depth": 0.45, "height": 0.9, "rotation": 90, "cost": 5500},
+                {"id": "table_1", "type": "table", "label": "Dining Table", "x": 2.3, "y": 2.3, "width": 1.4, "depth": 0.8, "height": 0.75, "rotation": 0, "cost": 18500},
+                {"id": "chair_1", "type": "chair", "label": "Dining Chair", "x": 1.25, "y": 2.3, "width": 0.45, "depth": 0.45, "height": 0.85, "rotation": 90, "cost": 3200},
+                {"id": "chair_2", "type": "chair", "label": "Dining Chair", "x": 3.35, "y": 2.3, "width": 0.45, "depth": 0.45, "height": 0.85, "rotation": 270, "cost": 3200},
+                {"id": "chair_3", "type": "chair", "label": "Dining Chair", "x": 2.3, "y": 1.35, "width": 0.45, "depth": 0.45, "height": 0.85, "rotation": 180, "cost": 3200},
+                {"id": "chair_4", "type": "chair", "label": "Dining Chair", "x": 2.3, "y": 3.25, "width": 0.45, "depth": 0.45, "height": 0.85, "rotation": 0, "cost": 3200},
+                {"id": "cabinet_1", "type": "cabinet", "label": "Sideboard Cabinet", "x": 4.0, "y": 3.85, "width": 1.0, "depth": 0.45, "height": 0.9, "rotation": 0, "cost": 18900},
             ],
         },
         {
@@ -188,12 +232,12 @@ def _preset_specs() -> list[Dict[str, Any]]:
             "width": 4.2, "length": 3.8, "budget": 60000, "style": "modern",
             "door": {"wall": "south", "offset": 0.25, "width": 0.9},
             "windows": [{"wall": "north", "offset": 1.3, "width": 1.4}],
-            "thumbnail": PHOTO_BY_STYLE["modern"],
-            "description": "A wall-side work surface and storage with a clear route through the room.",
+            "thumbnail": PHOTO_BY_ROOM["kitchen"],
+            "description": "Modular kitchen counter, pantry storage cabinet, prep table island, and daylight window.",
             "furniture": [
-                {"id": "cabinet_1", "type": "cabinet", "label": "Base Cabinet", "x": 0.5, "y": 2.4, "width": 1.2, "depth": 0.55, "height": 0.9, "rotation": 90, "cost": 6000},
-                {"id": "cabinet_2", "type": "cabinet", "label": "Tall Cabinet", "x": 3.65, "y": 2.55, "width": 0.65, "depth": 0.55, "height": 2.0, "rotation": 90, "cost": 9000},
-                {"id": "table_1", "type": "table", "label": "Prep Table", "x": 2.2, "y": 2.0, "width": 1.0, "depth": 0.6, "height": 0.9, "rotation": 0, "cost": 4500},
+                {"id": "cabinet_1", "type": "cabinet", "label": "Modular Kitchen Counter", "x": 0.45, "y": 2.0, "width": 1.2, "depth": 0.55, "height": 0.9, "rotation": 90, "cost": 6000},
+                {"id": "cabinet_2", "type": "cabinet", "label": "Pantry Storage Cabinet", "x": 3.75, "y": 2.0, "width": 0.65, "depth": 0.55, "height": 2.0, "rotation": 270, "cost": 9000},
+                {"id": "table_1", "type": "table", "label": "Kitchen Prep Island", "x": 2.1, "y": 3.2, "width": 1.0, "depth": 0.6, "height": 0.9, "rotation": 0, "cost": 4500},
             ],
         },
         {
@@ -201,11 +245,27 @@ def _preset_specs() -> list[Dict[str, Any]]:
             "width": 3.2, "length": 2.8, "budget": 28000, "style": "minimalist",
             "door": {"wall": "south", "offset": 0.25, "width": 0.8},
             "windows": [{"wall": "north", "offset": 1.0, "width": 1.0}],
-            "thumbnail": PHOTO_BY_STYLE["minimalist"],
-            "description": "Compact vanity storage with a clear doorway and daylight area.",
+            "thumbnail": PHOTO_BY_ROOM["bathroom"],
+            "description": "Vanity counter with basin, wall storage mirror unit, privacy awning window, and entry door.",
             "furniture": [
-                {"id": "cabinet_1", "type": "cabinet", "label": "Vanity Cabinet", "x": 0.45, "y": 1.95, "width": 0.9, "depth": 0.45, "height": 0.85, "rotation": 90, "cost": 6500},
-                {"id": "cabinet_2", "type": "cabinet", "label": "Wall Storage", "x": 2.75, "y": 1.95, "width": 0.7, "depth": 0.35, "height": 0.65, "rotation": 90, "cost": 4200},
+                {"id": "cabinet_1", "type": "cabinet", "label": "Vanity Counter & Basin", "x": 0.45, "y": 1.95, "width": 0.9, "depth": 0.45, "height": 0.85, "rotation": 90, "cost": 6500},
+                {"id": "cabinet_2", "type": "cabinet", "label": "Wall Storage Unit", "x": 2.75, "y": 1.95, "width": 0.7, "depth": 0.35, "height": 0.65, "rotation": 270, "cost": 4200},
+            ],
+        },
+        {
+            "id": "showcase-studio-apartment-modern", "name": "Urban Studio Apartment", "room_type": "studio_apartment",
+            "width": 5.4, "length": 4.8, "budget": 85000, "style": "modern",
+            "door": {"wall": "south", "offset": 0.8, "width": 0.9},
+            "windows": [{"wall": "north", "offset": 1.7, "width": 1.8}],
+            "thumbnail": PHOTO_BY_ROOM["studio_apartment"],
+            "description": "Queen studio bed, study table, chair, compact wardrobe, split AC, and 55\" TV.",
+            "furniture": [
+                {"id": "bed_1", "type": "bed", "label": "Queen Studio Bed", "x": 1.5, "y": 3.6, "width": 1.6, "depth": 2.0, "height": 0.8, "rotation": 0, "cost": 22000},
+                {"id": "wardrobe_1", "type": "wardrobe", "label": "Compact Wardrobe", "x": 0.45, "y": 1.8, "width": 1.2, "depth": 0.6, "height": 2.1, "rotation": 90, "cost": 19800},
+                {"id": "desk_1", "type": "desk", "label": "Study Table & Workstation", "x": 4.5, "y": 3.4, "width": 1.3, "depth": 0.65, "height": 0.75, "rotation": 0, "cost": 9200},
+                {"id": "chair_1", "type": "chair", "label": "Ergonomic Chair", "x": 4.5, "y": 2.5, "width": 0.6, "depth": 0.6, "height": 0.85, "rotation": 180, "cost": 7800},
+                {"id": "cabinet_1", "type": "cabinet", "label": "Split Air Conditioner (AC)", "x": 5.0, "y": 4.4, "width": 0.95, "depth": 0.25, "height": 0.35, "rotation": 270, "cost": 28500},
+                {"id": "tv_1", "type": "tv", "label": "55\" Wall TV", "x": 3.2, "y": 0.35, "width": 1.23, "depth": 0.15, "height": 0.71, "rotation": 0, "cost": 14800},
             ],
         },
     ]
@@ -254,7 +314,7 @@ def ensure_catalog_and_presets() -> None:
             "source_benchmark": "Curated ergonomic-rule seed; not imported from 3D-FRONT/3D-FUTURE",
             "thumbnail_url": spec["thumbnail"], "description": spec["description"],
             "featured": int(spec["id"].startswith("showcase-") and spec["room_type"] in {
-                "living_room", "bedroom", "home_office", "dining_room"
+                "living_room", "bedroom", "master_bedroom", "home_office", "dining_room", "kitchen", "bathroom", "studio_apartment"
             }),
         })
 

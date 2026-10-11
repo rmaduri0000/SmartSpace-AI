@@ -18,16 +18,17 @@ def approach_points(item, furniture=(), clearance=0.525):
     forward = get_forward_vector(item["type"], item["rotation"])
     side = (-forward[1], forward[0])
     sides = [(forward, item["depth"] / 2)]
-    if item["type"] == "desk":
+    if item["type"] in ("desk", "table"):
         chairs = [other for other in furniture if other["type"] == "chair"
-                  and math.hypot(item["x"] - other["x"], item["y"] - other["y"]) < 1.8]
+                  and math.hypot(item["x"] - other["x"], item["y"] - other["y"]) < 2.0]
         if chairs:
-            chair = min(chairs, key=lambda other: math.hypot(item["x"] - other["x"], item["y"] - other["y"]))
-            return approach_points(chair, clearance=clearance)
+            pts = []
+            for chair in chairs:
+                pts.extend(approach_points(chair, furniture, clearance=clearance))
+            return pts
     if item["type"] in ("bed", "chair"):
         sides = [(side, item["width"] / 2), ((-side[0], -side[1]), item["width"] / 2)]
-        if item["type"] == "chair":
-            sides.append(((-forward[0], -forward[1]), item["depth"] / 2))
+        sides.append(((-forward[0], -forward[1]), item["depth"] / 2))
     elif item["type"] == "table":
         sides += [((-forward[0], -forward[1]), item["depth"] / 2),
                   (side, item["width"] / 2), ((-side[0], -side[1]), item["width"] / 2)]

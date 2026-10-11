@@ -47,19 +47,27 @@ from database.models import decode_json, list_furniture, list_presets
 
 
 ROOM_ALIASES = {
-    "living": "living_room", "living room": "living_room", "studio": "living_room",
-    "studio apartment": "living_room", "bedroom": "bedroom", "master bedroom": "bedroom",
-    "office": "home_office", "home office": "home_office", "work room": "home_office",
-    "dining": "dining_room", "dining room": "dining_room", "kitchen": "kitchen",
-    "bathroom": "bathroom", "bath": "bathroom",
+    "living": "living_room", "living room": "living_room", "living_room": "living_room",
+    "lounge": "living_room", "family room": "living_room",
+    "bedroom": "bedroom", "regular bedroom": "bedroom", "guest bedroom": "bedroom",
+    "master": "master_bedroom", "master bedroom": "master_bedroom", "master_bedroom": "master_bedroom",
+    "primary bedroom": "master_bedroom",
+    "office": "home_office", "home office": "home_office", "home_office": "home_office",
+    "study": "home_office", "study room": "home_office", "work room": "home_office",
+    "dining": "dining_room", "dining room": "dining_room", "dining_room": "dining_room",
+    "kitchen": "kitchen", "bathroom": "bathroom", "bath": "bathroom", "washroom": "bathroom",
+    "studio": "studio_apartment", "studio apartment": "studio_apartment", "studio_apartment": "studio_apartment",
+    "studio flat": "studio_apartment",
 }
 ROOM_ITEMS = {
     "living_room": ["sofa", "tv", "table", "chair", "cabinet"],
     "bedroom": ["bed", "wardrobe", "desk", "chair", "cabinet"],
-    "home_office": ["desk", "chair", "cabinet"],
-    "dining_room": ["table", "chair", "chair", "chair", "cabinet"],
+    "master_bedroom": ["bed", "wardrobe", "desk", "chair", "cabinet", "tv"],
+    "home_office": ["desk", "chair", "cabinet", "cabinet", "chair"],
+    "dining_room": ["table", "chair", "chair", "chair", "chair", "cabinet"],
     "kitchen": ["cabinet", "cabinet", "table"],
     "bathroom": ["cabinet", "cabinet"],
+    "studio_apartment": ["bed", "desk", "chair", "wardrobe", "cabinet", "tv"],
 }
 
 
@@ -89,9 +97,55 @@ def _choose_preset(room_type: str, width_m: float, length_m: float) -> Optional[
 
 
 def _select_item(category: str, style: str, mode: str, remaining: float,
-                 width_m: float, length_m: float) -> Optional[Dict[str, Any]]:
+                 width_m: float, length_m: float,
+                 role: Optional[str] = None) -> Optional[Dict[str, Any]]:
     room_area = width_m * length_m
     products = list_furniture(category)
+    if role:
+        role_candidates = []
+        if role == "ac":
+            role_candidates = [p for p in products if "ac" in p["id"].lower() or "air conditioner" in p["name"].lower()]
+        elif role == "bookshelf":
+            role_candidates = [p for p in products if "book" in p["id"].lower() or "modular-storage" in p["id"].lower() or "tall-display" in p["id"].lower()]
+        elif role == "sideboard":
+            role_candidates = [p for p in products if "sideboard" in p["id"].lower() or "modular-storage" in p["id"].lower() or "tall-display" in p["id"].lower()]
+        elif role == "kitchen_counter":
+            role_candidates = [p for p in products if "kitchen-counter" in p["id"].lower()]
+        elif role == "kitchen_pantry":
+            role_candidates = [p for p in products if "pantry" in p["id"].lower()]
+        elif role == "kitchen_island":
+            role_candidates = [p for p in products if "island" in p["id"].lower() or "prep" in p["name"].lower()]
+        elif role == "bath_vanity":
+            role_candidates = [p for p in products if "vanity" in p["id"].lower()]
+        elif role == "bath_storage":
+            role_candidates = [p for p in products if "wall-storage" in p["id"].lower()]
+        elif role == "king_bed":
+            role_candidates = [p for p in products if "king" in p["id"].lower()]
+        elif role == "queen_bed":
+            role_candidates = [p for p in products if "queen" in p["id"].lower()]
+        elif role == "coffee_table":
+            role_candidates = [p for p in products if "coffee" in p["id"].lower() or "central" in p["name"].lower()]
+        elif role == "dining_table":
+            role_candidates = [p for p in products if "dining" in p["id"].lower()]
+        elif role == "lounge_chair":
+            role_candidates = [p for p in products if "lounge" in p["id"].lower() or "armchair" in p["id"].lower() or "accent" in p["name"].lower()]
+        elif role == "dining_chair":
+            role_candidates = [p for p in products if "dining" in p["id"].lower()]
+        elif role == "office_chair":
+            role_candidates = [p for p in products if "desk" in p["id"].lower() or "ergonomic" in p["name"].lower() or "gaming" in p["id"].lower()]
+        elif role == "visitor_chair":
+            role_candidates = [p for p in products if "dining" in p["id"].lower() or "accent" in p["id"].lower()]
+        elif role == "office_desk" or role == "study_desk":
+            role_candidates = [p for p in products if "study" in p["id"].lower() or "writing" in p["id"].lower() or "executive" in p["id"].lower() or "standing" in p["id"].lower()]
+        elif role == "wardrobe_large":
+            role_candidates = [p for p in products if "3" in p["id"].lower() or "sliding" in p["id"].lower() or "tall" in p["id"].lower()]
+        elif role == "wardrobe":
+            role_candidates = [p for p in products if "sliding-2" in p["id"].lower() or "compact" in p["id"].lower() or "tall-wood" in p["id"].lower()]
+
+        if role_candidates:
+            budget_matches = [p for p in role_candidates if int(p["base_cost_inr"]) <= remaining]
+            products = budget_matches if budget_matches else role_candidates
+
     products = [
         product for product in products
         if float(product["width"]) * float(product["depth"]) <= room_area * 0.35
@@ -323,7 +377,7 @@ def recommend_designs(payload: Dict[str, Any], agent: Any = None) -> Dict[str, A
         raise ValueError("Budget must be between ₹5,000 and ₹10,00,00,000.")
     room_type = _canonical_room(payload.get("room_type", payload.get("roomType", "living_room")))
     if room_type not in ROOM_ITEMS:
-        raise ValueError("Choose a living room, bedroom, home office, dining room, kitchen, or bathroom.")
+        raise ValueError("Choose living room, bedroom, master bedroom, kitchen, bathroom, dining room, home office, or studio apartment.")
     style = _style_key(payload.get("style", payload.get("designStyle", "modern")))
     width_m = width_ft * 0.3048
     length_m = length_ft * 0.3048
@@ -346,8 +400,86 @@ def recommend_designs(payload: Dict[str, Any], agent: Any = None) -> Dict[str, A
         spend = 0.0
         chosen = []
         skipped = []
-        for category in ROOM_ITEMS[room_type]:
-            product = _select_item(category, candidate_style, mode, budget_cap - spend, width_m, length_m)
+        categories = ROOM_ITEMS[room_type]
+        for idx, category in enumerate(categories):
+            role = None
+            if room_type == "master_bedroom":
+                if category == "bed":
+                    role = "king_bed"
+                elif category == "wardrobe":
+                    role = "wardrobe_large"
+                elif category == "cabinet":
+                    role = "ac"
+                elif category == "chair":
+                    role = "lounge_chair"
+                elif category == "desk":
+                    role = "study_desk"
+                elif category == "tv":
+                    role = "tv"
+            elif room_type == "bedroom":
+                if category == "bed":
+                    role = "queen_bed"
+                elif category == "wardrobe":
+                    role = "wardrobe"
+                elif category == "cabinet":
+                    role = "ac"
+                elif category == "desk":
+                    role = "study_desk"
+                elif category == "chair":
+                    role = "desk_chair"
+            elif room_type == "home_office":
+                if category == "desk":
+                    role = "office_desk"
+                elif category == "chair" and idx == 1:
+                    role = "office_chair"
+                elif category == "chair":
+                    role = "visitor_chair"
+                elif category == "cabinet" and idx == 2:
+                    role = "ac"
+                elif category == "cabinet" and idx == 3:
+                    role = "bookshelf"
+            elif room_type == "dining_room":
+                if category == "table":
+                    role = "dining_table"
+                elif category == "chair":
+                    role = "dining_chair"
+                elif category == "cabinet":
+                    role = "sideboard"
+            elif room_type == "kitchen":
+                if category == "cabinet" and idx == 0:
+                    role = "kitchen_counter"
+                elif category == "cabinet" and idx == 1:
+                    role = "kitchen_pantry"
+                elif category == "table":
+                    role = "kitchen_island"
+            elif room_type == "bathroom":
+                if category == "cabinet" and idx == 0:
+                    role = "bath_vanity"
+                elif category == "cabinet" and idx == 1:
+                    role = "bath_storage"
+            elif room_type == "studio_apartment":
+                if category == "bed":
+                    role = "queen_bed"
+                elif category == "wardrobe":
+                    role = "wardrobe"
+                elif category == "desk":
+                    role = "office_desk"
+                elif category == "chair":
+                    role = "office_chair"
+                elif category == "cabinet":
+                    role = "ac"
+                elif category == "tv":
+                    role = "tv"
+            elif room_type == "living_room":
+                if category == "table":
+                    role = "coffee_table"
+                elif category == "chair":
+                    role = "lounge_chair"
+                elif category == "cabinet":
+                    role = "ac"
+                elif category == "tv":
+                    role = "tv"
+            product = _select_item(category, candidate_style, mode, budget_cap - spend, width_m, length_m, role=role)
             if product is None:
                 skipped.append(category)
                 continue

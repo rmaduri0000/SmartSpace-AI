@@ -34,6 +34,8 @@ htmlcov/
 node_modules/
 .pnpm-store/
 frontend/node_modules/
+package-lock.json
+frontend/package-lock.json
 
 # ---------------------------------------------------------------------------
 # Model weights & training artifacts (large binaries)
@@ -54,6 +56,9 @@ runs/
 # ---------------------------------------------------------------------------
 # Database & session secrets
 # ---------------------------------------------------------------------------
+*.db
+*.part
+data/*.db
 data/*.sqlite3
 data/*.sqlite3-shm
 data/*.sqlite3-wal

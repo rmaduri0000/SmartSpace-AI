@@ -34,11 +34,13 @@ const steps = ['Project basics', 'Room details', 'Design preferences', 'Upload &
 
 function roomTypeKey(value: string) {
   const normalized = value.toLowerCase();
+  if (normalized.includes('master')) return 'master_bedroom';
   if (normalized.includes('bed')) return 'bedroom';
-  if (normalized.includes('office')) return 'home_office';
+  if (normalized.includes('office') || normalized.includes('study')) return 'home_office';
   if (normalized.includes('dining')) return 'dining_room';
   if (normalized.includes('kitchen')) return 'kitchen';
   if (normalized.includes('bath')) return 'bathroom';
+  if (normalized.includes('studio')) return 'studio_apartment';
   return 'living_room';
 }
 

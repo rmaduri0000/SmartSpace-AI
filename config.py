@@ -109,53 +109,130 @@ ERGONOMIC_RULES = {
 
 # Pre-configured sample room profiles for rapid demonstration & verification
 SAMPLE_ROOMS = {
+    "living_room": {
+        "id": "living_room",
+        "name": "Modern Living Room",
+        "room_type": "living_room",
+        "dimensions": {"width": 5.4, "length": 4.8, "height": 2.8},
+        "budget": 85000,
+        "door": {"wall": "south", "offset": 0.3, "width": 0.9},
+        "windows": [{"wall": "north", "offset": 1.7, "width": 1.5}],
+        "initial_furniture": [
+            {"id": "sofa_1", "type": "sofa", "x": 3.35, "y": 3.88, "rotation": 0, "label": "3-Seater Sofa"},
+            {"id": "table_1", "type": "table", "x": 3.35, "y": 2.55, "rotation": 0, "label": "Coffee Table"},
+            {"id": "tv_1", "type": "tv", "x": 3.35, "y": 0.45, "rotation": 0, "label": "55\" TV Console"},
+            {"id": "chair_1", "type": "chair", "x": 1.35, "y": 2.65, "rotation": 0, "label": "Accent Lounge Chair"},
+            {"id": "cabinet_1", "type": "cabinet", "x": 0.48, "y": 3.88, "rotation": 90, "label": "Split Air Conditioner (AC)"}
+        ]
+    },
+    "bedroom": {
+        "id": "bedroom",
+        "name": "Cozy Bedroom",
+        "room_type": "bedroom",
+        "dimensions": {"width": 4.8, "length": 4.4, "height": 2.8},
+        "budget": 65000,
+        "door": {"wall": "south", "offset": 0.25, "width": 0.9},
+        "windows": [{"wall": "north", "offset": 1.65, "width": 1.5}],
+        "initial_furniture": [
+            {"id": "bed_1", "type": "bed", "x": 2.7, "y": 3.1, "rotation": 0, "label": "Queen Bed"},
+            {"id": "wardrobe_1", "type": "wardrobe", "x": 0.55, "y": 1.6, "rotation": 90, "label": "2-Door Wardrobe"},
+            {"id": "desk_1", "type": "desk", "x": 4.0, "y": 1.6, "rotation": 270, "label": "Study Table"},
+            {"id": "chair_1", "type": "chair", "x": 3.25, "y": 1.6, "rotation": 90, "label": "Desk Chair"},
+            {"id": "cabinet_1", "type": "cabinet", "x": 0.45, "y": 3.7, "rotation": 90, "label": "Split Air Conditioner (AC)"}
+        ]
+    },
     "master_bedroom": {
         "id": "master_bedroom",
         "name": "Contemporary Master Bedroom",
-        "room_type": "bedroom",
-        "dimensions": {"width": 4.8, "length": 4.0, "height": 2.8},
-        "budget": 35000,
+        "room_type": "master_bedroom",
+        "dimensions": {"width": 5.4, "length": 4.8, "height": 2.8},
+        "budget": 95000,
         "door": {"wall": "south", "offset": 0.8, "width": 0.9},
-        "windows": [{"wall": "north", "offset": 1.8, "width": 1.6}],
+        "windows": [{"wall": "north", "offset": 1.7, "width": 1.8}],
         "initial_furniture": [
-            {"id": "bed_1", "type": "bed", "x": 1.2, "y": 1.5, "rotation": 0},
-            {"id": "wardrobe_1", "type": "wardrobe", "x": 3.6, "y": 0.8, "rotation": 90},
-            {"id": "desk_1", "type": "desk", "x": 0.9, "y": 3.2, "rotation": 180},
-            {"id": "chair_1", "type": "chair", "x": 0.9, "y": 2.5, "rotation": 0},
-            {"id": "cabinet_1", "type": "cabinet", "x": 3.8, "y": 3.0, "rotation": 270}
+            {"id": "bed_1", "type": "bed", "x": 3.1, "y": 3.6, "rotation": 0, "label": "King Size Bed"},
+            {"id": "wardrobe_1", "type": "wardrobe", "x": 0.45, "y": 2.2, "rotation": 90, "label": "3-Door Wardrobe"},
+            {"id": "cabinet_1", "type": "cabinet", "x": 0.4, "y": 4.1, "rotation": 90, "label": "Split Air Conditioner (AC)"},
+            {"id": "desk_1", "type": "desk", "x": 4.8, "y": 1.8, "rotation": 270, "label": "Study / Dressing Table"},
+            {"id": "chair_1", "type": "chair", "x": 4.0, "y": 1.8, "rotation": 90, "label": "Accent Chair"},
+            {"id": "tv_1", "type": "tv", "x": 3.1, "y": 0.35, "rotation": 0, "label": "55\" Wall TV"}
         ]
     },
-    "studio_living": {
-        "id": "studio_living",
-        "name": "Urban Studio Living Room",
-        "room_type": "living_room",
-        "dimensions": {"width": 5.4, "length": 4.5, "height": 2.8},
-        "budget": 42000,
-        "door": {"wall": "west", "offset": 0.6, "width": 0.9},
-        "windows": [{"wall": "east", "offset": 1.5, "width": 2.0}],
+    "home_office": {
+        "id": "home_office",
+        "name": "Ergonomic Home Office",
+        "room_type": "home_office",
+        "dimensions": {"width": 4.2, "length": 3.8, "height": 2.7},
+        "budget": 52000,
+        "door": {"wall": "south", "offset": 0.25, "width": 0.9},
+        "windows": [{"wall": "north", "offset": 1.1, "width": 1.4}],
         "initial_furniture": [
-            {"id": "sofa_1", "type": "sofa", "x": 2.5, "y": 1.2, "rotation": 0},
-            {"id": "table_1", "type": "table", "x": 2.5, "y": 2.2, "rotation": 0},
-            {"id": "tv_1", "type": "tv", "x": 2.5, "y": 3.8, "rotation": 180},
-            {"id": "chair_1", "type": "chair", "x": 1.2, "y": 2.0, "rotation": 90},
-            {"id": "chair_2", "type": "chair", "x": 3.8, "y": 2.0, "rotation": 270},
-            {"id": "cabinet_1", "type": "cabinet", "x": 4.5, "y": 1.0, "rotation": 90}
+            {"id": "desk_1", "type": "desk", "x": 2.7, "y": 2.8, "rotation": 0, "label": "Study Table / Workstation"},
+            {"id": "chair_1", "type": "chair", "x": 2.7, "y": 1.95, "rotation": 180, "label": "Ergonomic Office Chair"},
+            {"id": "cabinet_1", "type": "cabinet", "x": 0.48, "y": 3.1, "rotation": 90, "label": "Split Air Conditioner (AC)"},
+            {"id": "cabinet_2", "type": "cabinet", "x": 0.48, "y": 1.5, "rotation": 90, "label": "Bookshelf Storage"},
+            {"id": "chair_2", "type": "chair", "x": 3.6, "y": 1.6, "rotation": 270, "label": "Visitor Chair"}
         ]
     },
-    "executive_office": {
-        "id": "executive_office",
-        "name": "Minimalist Executive Office",
-        "room_type": "office",
-        "dimensions": {"width": 4.2, "length": 3.6, "height": 2.7},
+    "dining_room": {
+        "id": "dining_room",
+        "name": "Contemporary Dining Room",
+        "room_type": "dining_room",
+        "dimensions": {"width": 4.8, "length": 4.3, "height": 2.8},
+        "budget": 55000,
+        "door": {"wall": "south", "offset": 0.25, "width": 0.9},
+        "windows": [{"wall": "north", "offset": 1.4, "width": 1.5}],
+        "initial_furniture": [
+            {"id": "table_1", "type": "table", "x": 2.3, "y": 2.3, "rotation": 0, "label": "Dining Table"},
+            {"id": "chair_1", "type": "chair", "x": 1.25, "y": 2.3, "rotation": 90, "label": "Dining Chair"},
+            {"id": "chair_2", "type": "chair", "x": 3.35, "y": 2.3, "rotation": 270, "label": "Dining Chair"},
+            {"id": "chair_3", "type": "chair", "x": 2.3, "y": 1.35, "rotation": 180, "label": "Dining Chair"},
+            {"id": "chair_4", "type": "chair", "x": 2.3, "y": 3.25, "rotation": 0, "label": "Dining Chair"},
+            {"id": "cabinet_1", "type": "cabinet", "x": 4.0, "y": 3.85, "rotation": 0, "label": "Sideboard Cabinet"}
+        ]
+    },
+    "kitchen": {
+        "id": "kitchen",
+        "name": "Modern Kitchen",
+        "room_type": "kitchen",
+        "dimensions": {"width": 4.2, "length": 3.8, "height": 2.8},
+        "budget": 60000,
+        "door": {"wall": "south", "offset": 0.25, "width": 0.9},
+        "windows": [{"wall": "north", "offset": 1.3, "width": 1.4}],
+        "initial_furniture": [
+            {"id": "cabinet_1", "type": "cabinet", "x": 0.45, "y": 2.0, "rotation": 90, "label": "Modular Kitchen Counter"},
+            {"id": "cabinet_2", "type": "cabinet", "x": 3.75, "y": 2.0, "rotation": 270, "label": "Pantry Storage Cabinet"},
+            {"id": "table_1", "type": "table", "x": 2.1, "y": 3.2, "rotation": 0, "label": "Kitchen Prep Island"}
+        ]
+    },
+    "bathroom": {
+        "id": "bathroom",
+        "name": "Minimal Bathroom",
+        "room_type": "bathroom",
+        "dimensions": {"width": 3.2, "length": 2.8, "height": 2.5},
         "budget": 28000,
-        "door": {"wall": "south", "offset": 0.5, "width": 0.9},
-        "windows": [{"wall": "west", "offset": 1.0, "width": 1.5}],
+        "door": {"wall": "south", "offset": 0.25, "width": 0.8},
+        "windows": [{"wall": "north", "offset": 1.0, "width": 1.0}],
         "initial_furniture": [
-            {"id": "desk_1", "type": "desk", "x": 2.1, "y": 1.8, "rotation": 0},
-            {"id": "chair_1", "type": "chair", "x": 2.1, "y": 1.1, "rotation": 0},
-            {"id": "cabinet_1", "type": "cabinet", "x": 3.4, "y": 0.8, "rotation": 90},
-            {"id": "chair_2", "type": "chair", "x": 1.4, "y": 2.5, "rotation": 180},
-            {"id": "chair_3", "type": "chair", "x": 2.8, "y": 2.5, "rotation": 180}
+            {"id": "cabinet_1", "type": "cabinet", "x": 0.45, "y": 1.95, "rotation": 90, "label": "Vanity Counter & Basin"},
+            {"id": "cabinet_2", "type": "cabinet", "x": 2.75, "y": 1.95, "rotation": 270, "label": "Wall Storage Unit"}
+        ]
+    },
+    "studio_apartment": {
+        "id": "studio_apartment",
+        "name": "Urban Studio Apartment",
+        "room_type": "studio_apartment",
+        "dimensions": {"width": 5.4, "length": 4.8, "height": 2.8},
+        "budget": 85000,
+        "door": {"wall": "south", "offset": 0.8, "width": 0.9},
+        "windows": [{"wall": "north", "offset": 1.7, "width": 1.8}],
+        "initial_furniture": [
+            {"id": "bed_1", "type": "bed", "x": 1.5, "y": 3.6, "rotation": 0, "label": "Queen Studio Bed"},
+            {"id": "wardrobe_1", "type": "wardrobe", "x": 0.45, "y": 1.8, "rotation": 90, "label": "Compact Wardrobe"},
+            {"id": "desk_1", "type": "desk", "x": 4.5, "y": 3.4, "rotation": 0, "label": "Study Table & Workstation"},
+            {"id": "chair_1", "type": "chair", "x": 4.5, "y": 2.5, "rotation": 180, "label": "Ergonomic Chair"},
+            {"id": "cabinet_1", "type": "cabinet", "x": 5.0, "y": 4.4, "rotation": 270, "label": "Split Air Conditioner (AC)"},
+            {"id": "tv_1", "type": "tv", "x": 3.2, "y": 0.35, "rotation": 0, "label": "55\" Wall TV"}
         ]
     }
 }

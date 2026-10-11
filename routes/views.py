@@ -57,8 +57,17 @@ def landing_page():
             "thumbnail": row["thumbnail_url"], "description": row["description"],
             "layout": layout,
         })
-    order = {"living_room": 0, "bedroom": 1, "home_office": 2, "dining_room": 3}
-    showcases.sort(key=lambda preset: order.get(preset["room_type"], 10))
+    order = {
+        "living_room": 0,
+        "bedroom": 1,
+        "master_bedroom": 2,
+        "home_office": 3,
+        "dining_room": 4,
+        "kitchen": 5,
+        "bathroom": 6,
+        "studio_apartment": 7,
+    }
+    showcases.sort(key=lambda preset: order.get(preset["room_type"], 99))
     return render_template("landing.html", page_key="home", showcase_presets=showcases)
 
 

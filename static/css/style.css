@@ -3641,24 +3641,178 @@ html { scroll-padding-top: 106px; }
 
 /* Data-backed homepage room cards and actual CAD/photo previews. */
 .page-home .showcase-grid {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: none;
-    grid-auto-rows: minmax(370px, auto);
-    gap: 20px;
+    gap: 32px;
+    max-width: 1240px;
+    margin: 0 auto;
 }
 .page-home .showcase-item,
-.page-home .showcase-item.style-large { grid-row: auto; display: grid; grid-template-rows: 210px 1fr; }
-.page-home .showcase-info { height: auto; min-height: 190px; padding: 17px 19px; display: grid; align-content: start; gap: 12px; }
-.page-home .showcase-info h3 { margin: 0 0 5px; font-family: Georgia, serif; font-size: 22px; }
-.page-home .showcase-info > div:first-child > span { font-size: 10px; line-height: 1.5; }
-.page-home .showcase-image-tags { position: absolute; z-index: 2; top: 13px; left: 13px; right: 13px; display: flex; justify-content: space-between; gap: 8px; }
-.page-home .showcase-image-tags span { padding: 7px 10px; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; background: rgba(22,37,27,.63); color: #fff; font: 10px Arial,sans-serif; backdrop-filter: blur(8px); }
-.page-home .showcase-metrics { display: flex; flex-wrap: wrap; gap: 7px; }
-.page-home .showcase-metrics span { display: grid; gap: 3px; padding: 8px 10px; border: 1px solid rgba(44,83,57,.1); border-radius: 10px; background: #f5f7f2; color: #3b5945; font: 10px Arial,sans-serif; }
-.page-home .showcase-metrics b { color: #728077; font-size: 8px; letter-spacing: .07em; text-transform: uppercase; }
-.page-home .showcase-metrics small { color: #7c8980; font-size: 9px; }
-.page-home .showcase-load-link { width: fit-content; display: inline-flex; align-items: center; gap: 8px; color: #31734b; font: 700 11px Arial,sans-serif; text-decoration: none; }
-.page-home .showcase-load-link:hover { color: #174e2f; }
+.page-home .showcase-item.style-large {
+    grid-row: auto;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    background: #faf7f2;
+    border: 1px solid #ded6cb;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(45, 40, 32, 0.06);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.3s ease;
+}
+.page-home .showcase-item:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 42px rgba(45, 40, 32, 0.13);
+    border-color: #c4b9a8;
+}
+.page-home .style-image.showcase-image,
+.page-home .showcase-image {
+    position: relative;
+    width: 100%;
+    height: 390px;
+    min-height: 390px;
+    overflow: hidden;
+    background: #e7e2d9;
+    flex-shrink: 0;
+}
+.page-home .showcase-image-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+}
+.page-home .style-image.showcase-image .style-photo,
+.page-home .showcase-image .style-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center 42%;
+    transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.page-home .showcase-item:hover .style-photo {
+    transform: scale(1.05);
+}
+.page-home .style-image.showcase-image::after,
+.page-home .showcase-image::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+    z-index: 1;
+    background: linear-gradient(
+        180deg,
+        rgba(20, 26, 22, 0.30) 0%,
+        rgba(20, 26, 22, 0.04) 25%,
+        transparent 50%,
+        rgba(20, 26, 22, 0.22) 100%
+    );
+}
+.page-home .showcase-image-tags {
+    position: absolute;
+    z-index: 2;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+}
+.page-home .showcase-image-tags span {
+    padding: 7px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 999px;
+    background: rgba(22, 38, 28, 0.74);
+    color: #ffffff;
+    font: 600 12px / 1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    letter-spacing: 0.02em;
+}
+.page-home .showcase-info {
+    flex: 1;
+    height: auto;
+    min-height: unset;
+    padding: 24px 26px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: #faf7f2;
+}
+.page-home .showcase-info h3 {
+    margin: 0 0 6px;
+    font-family: Georgia, serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: #24221d;
+    letter-spacing: -0.01em;
+}
+.page-home .showcase-info > div:first-child > span {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #635c52;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: block;
+}
+.page-home .showcase-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 2px;
+}
+.page-home .showcase-metrics span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 13px;
+    border: 1px solid rgba(44, 83, 57, 0.14);
+    border-radius: 10px;
+    background: #f0ebe2;
+    color: #2c593b;
+    font: 500 12px / 1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.page-home .showcase-metrics b {
+    color: #728076;
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+.page-home .showcase-metrics small {
+    color: #7d8880;
+    font-size: 11px;
+}
+.page-home .showcase-load-link {
+    margin-top: auto;
+    padding: 10px 18px;
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 9px;
+    background: rgba(44, 89, 59, 0.08);
+    border: 1px solid rgba(44, 89, 59, 0.16);
+    color: #235836;
+    font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.page-home .showcase-load-link:hover {
+    background: #275d3a;
+    color: #ffffff;
+    border-color: #275d3a;
+    transform: translateX(3px);
+}
 .page-home .showcase-cad-room { display: grid; place-items: center; min-height: 410px; padding: 18px; background: #f3f6f0; }
 .page-home .showcase-cad-room::after { display: none; }
 .page-home .homepage-plan-canvas { width: 100%; height: 100%; min-height: 365px; border: 1px solid rgba(38,76,50,.16); border-radius: 13px; background: #f9fbf7; }
@@ -3897,10 +4051,54 @@ html { scroll-padding-top: 106px; }
     .page-studio .recommendation-request-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 
+@media (max-width: 980px) {
+    .page-home .showcase-grid {
+        gap: 22px;
+    }
+    .page-home .style-image.showcase-image,
+    .page-home .showcase-image {
+        height: 340px;
+        min-height: 340px;
+    }
+    .page-home .showcase-info {
+        padding: 20px 22px 22px;
+    }
+}
+
 @media (max-width: 780px) {
-    .page-home .showcase-grid { grid-template-columns: 1fr; grid-auto-rows: auto; }
-    .page-home .showcase-item, .page-home .showcase-item.style-large { grid-template-rows: 205px 1fr; }
-    .page-home .showcase-info { min-height: 0; }
+    .page-home .showcase-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    .page-home .style-image.showcase-image,
+    .page-home .showcase-image {
+        height: 300px;
+        min-height: 300px;
+    }
+    .page-home .showcase-info {
+        min-height: 0;
+        padding: 18px 20px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-home .style-image.showcase-image,
+    .page-home .showcase-image {
+        height: 240px;
+        min-height: 240px;
+    }
+    .page-home .showcase-image-tags {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+    }
+    .page-home .showcase-image-tags span {
+        font-size: 10px;
+        padding: 5px 10px;
+    }
+    .page-home .showcase-info h3 {
+        font-size: 20px;
+    }
 }
 
 /* ── Studio Progressive Disclosure Layout ──────────────────────────────── */

@@ -153,6 +153,7 @@ class InteriorEnv:
             f_item = {
                 "id": item.get("id", f"{f_type}_{i+1}"),
                 "type": f_type,
+                "label": item.get("label") or specs.get("label", f_type.title()),
                 "x": float(item.get("x", self.room_w / 2.0)),
                 "y": float(item.get("y", self.room_l / 2.0)),
                 "width": float(item.get("width", specs["width"])),

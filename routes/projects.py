@@ -48,7 +48,7 @@ from database.models import (
     save_project_history,
 )
 from engine.interior_env import InteriorEnv
-from engine.recommender import recommend_designs
+from engine.recommender import recommend_designs, _canonical_room
 from routes.jobs import submit_work
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -165,8 +165,11 @@ def save_room_api():
     image_bytes = uploaded_file.read(10 * 1024 * 1024 + 1) if photo_uploaded else None
     if image_bytes is not None and len(image_bytes) > 10 * 1024 * 1024:
         return jsonify(success=False, error="Room photos must be 10 MB or smaller."), 413
+    payload = request.form.to_dict()
+    if request.is_json and request.get_json(silent=True):
+        payload.update(request.get_json(silent=True))
     return submit_work(
-        _prepare_room, request.form.to_dict(), image_bytes, photo_uploaded,
+        _prepare_room, payload, image_bytes, photo_uploaded,
         dict(session.get("smartspace_project") or {}), _current_user_id(),
         current_app.config["VISION_EXTRACTOR"], current_app.config.get("DQN_AGENT"),
     )
@@ -181,21 +184,21 @@ def _prepare_room(form, image_bytes, photo_uploaded, project_context, user_id, v
     """
     try:
         # Form field extractions
-        room_name = form.get("roomName", "Master Room")
-        room_type = form.get("roomType", "Master Bedroom")
+        room_name = form.get("roomName") or form.get("room_name") or form.get("name") or "SmartSpace Room"
+        room_type = form.get("roomType") or form.get("room_type") or project_context.get("roomType") or "Living Room"
 
         # Dimensions in feet converted to meters
-        length_ft = float(form.get("length", 12.0))
-        width_ft = float(form.get("width", 10.0))
-        height_ft = float(form.get("height", 10.0))
+        length_ft = float(form.get("length") or form.get("length_ft") or 14.0)
+        width_ft = float(form.get("width") or form.get("width_ft") or 14.0)
+        height_ft = float(form.get("height") or form.get("height_ft") or 10.0)
 
         length_m = round(length_ft * 0.3048, 2)
         width_m = round(width_ft * 0.3048, 2)
         height_m = round(height_ft * 0.3048, 2)
 
-        num_doors = int(form.get("doors", 1))
-        num_windows = int(form.get("windows", 1))
-        budget_inr = float(form.get("budget", 20000.0))
+        num_doors = int(form.get("doors") or form.get("num_doors") or 1)
+        num_windows = int(form.get("windows") or form.get("num_windows") or 1)
+        budget_inr = float(form.get("budget") or form.get("budget_inr") or 85000.0)
         if not (6 <= length_ft <= 60 and 6 <= width_ft <= 60 and 7 <= height_ft <= 25):
             raise ValueError("Room width/length must be 6–60 feet and height 7–25 feet.")
         if not (1 <= num_doors <= 5 and 0 <= num_windows <= 6):
@@ -242,6 +245,36 @@ def _prepare_room(form, image_bytes, photo_uploaded, project_context, user_id, v
                     door_info = room_state.get("door", door_info)
                 if "window" in detected_classes:
                     windows = room_state.get("windows", windows)
+
+                if detected_furniture:
+                    clean_type = _canonical_room(room_type)
+                    incompatible_types = {
+                        "home_office": {"bed"},
+                        "kitchen": {"bed", "sofa", "wardrobe"},
+                        "bathroom": {"bed", "sofa", "desk", "tv", "wardrobe"},
+                        "dining_room": {"bed", "wardrobe"},
+                        "living_room": {"bed"},
+                    }
+                    if clean_type in incompatible_types:
+                        detected_furniture = [
+                            item for item in detected_furniture
+                            if item.get("type") not in incompatible_types[clean_type]
+                        ]
+                    core_anchors = {
+                        "home_office": "desk",
+                        "living_room": "sofa",
+                        "dining_room": "table",
+                        "kitchen": "cabinet",
+                        "bathroom": "cabinet",
+                        "master_bedroom": "bed",
+                        "bedroom": "bed",
+                        "studio_apartment": "bed",
+                    }
+                    anchor = core_anchors.get(clean_type)
+                    if anchor and not any(item.get("type") == anchor for item in detected_furniture):
+                        # Uploaded photo did not contain the core anchor furniture for this room type;
+                        # use curated room amenities so the space is properly furnished.
+                        detected_furniture = None
             except Exception as error:
                 current_app.logger.warning("YOLO skipped; using room template: %s", error)
                 annotated_img_b64 = None
@@ -295,41 +328,68 @@ def _prepare_room(form, image_bytes, photo_uploaded, project_context, user_id, v
 
         # Last-resort room-type furniture also works if the catalogue is unavailable.
         if not detected_furniture:
-            if "bedroom" in room_type.lower():
+            clean_type = _canonical_room(room_type)
+            if clean_type == "master_bedroom" or ("master" in room_type.lower() and "bed" in room_type.lower()):
+                detected_furniture = [
+                    {"id": "bed_1", "type": "bed", "x": width_m * 0.5, "y": length_m * 0.72, "width": 1.93, "depth": 2.03, "height": 0.82, "rotation": 0, "cost": 32000, "label": "King Size Bed"},
+                    {"id": "wardrobe_1", "type": "wardrobe", "x": width_m * 0.85, "y": length_m * 0.45, "width": 1.5, "depth": 0.6, "height": 2.1, "rotation": 90, "cost": 32500, "label": "3-Door Wardrobe"},
+                    {"id": "desk_1", "type": "desk", "x": width_m * 0.22, "y": length_m * 0.72, "width": 1.2, "depth": 0.6, "height": 0.75, "rotation": 0, "cost": 9200, "label": "Study / Dressing Table"},
+                    {"id": "chair_1", "type": "chair", "x": width_m * 0.22, "y": length_m * 0.52, "width": 0.6, "depth": 0.6, "height": 0.85, "rotation": 180, "cost": 4500, "label": "Chair"},
+                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.12, "y": length_m * 0.88, "width": 0.95, "depth": 0.25, "height": 0.35, "rotation": 90, "cost": 28500, "label": "Split Air Conditioner (AC)"},
+                    {"id": "tv_1", "type": "tv", "x": width_m * 0.5, "y": length_m * 0.15, "width": 1.23, "depth": 0.15, "height": 0.71, "rotation": 0, "cost": 14800, "label": "55\" Wall TV & Console"}
+                ]
+            elif clean_type == "bedroom" or "bed" in room_type.lower():
                 detected_furniture = [
                     {"id": "bed_1", "type": "bed", "x": width_m * 0.5, "y": length_m * 0.7, "width": 1.6, "depth": 2.0, "height": 0.8, "rotation": 0, "cost": 12000, "label": "Queen Bed"},
-                    {"id": "wardrobe_1", "type": "wardrobe", "x": width_m * 0.8, "y": length_m * 0.3, "width": 1.5, "depth": 0.6, "height": 2.1, "rotation": 90, "cost": 8500, "label": "2-Door Wardrobe"},
-                    {"id": "desk_1", "type": "desk", "x": width_m * 0.25, "y": length_m * 0.3, "width": 1.2, "depth": 0.6, "height": 0.75, "rotation": 0, "cost": 4200, "label": "Study Desk"},
-                    {"id": "chair_1", "type": "chair", "x": width_m * 0.25, "y": length_m * 0.45, "width": 0.6, "depth": 0.6, "height": 0.85, "rotation": 0, "cost": 1500, "label": "Desk Chair"}
+                    {"id": "wardrobe_1", "type": "wardrobe", "x": width_m * 0.85, "y": length_m * 0.4, "width": 1.5, "depth": 0.6, "height": 2.1, "rotation": 90, "cost": 8500, "label": "2-Door Wardrobe"},
+                    {"id": "desk_1", "type": "desk", "x": width_m * 0.25, "y": length_m * 0.7, "width": 1.2, "depth": 0.6, "height": 0.75, "rotation": 0, "cost": 4200, "label": "Study Table"},
+                    {"id": "chair_1", "type": "chair", "x": width_m * 0.25, "y": length_m * 0.52, "width": 0.6, "depth": 0.6, "height": 0.85, "rotation": 180, "cost": 1500, "label": "Desk Chair"},
+                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.12, "y": length_m * 0.88, "width": 0.95, "depth": 0.25, "height": 0.35, "rotation": 90, "cost": 28500, "label": "Split Air Conditioner (AC)"}
                 ]
-            elif "office" in room_type.lower():
+            elif clean_type == "home_office" or "office" in room_type.lower() or "study" in room_type.lower():
                 detected_furniture = [
-                    {"id": "desk_1", "type": "desk", "x": width_m * 0.5, "y": length_m * 0.65, "rotation": 0, "cost": 4200, "label": "Study Desk"},
-                    {"id": "chair_1", "type": "chair", "x": width_m * 0.5, "y": length_m * 0.4, "rotation": 0, "cost": 1500, "label": "Office Chair"},
-                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.82, "y": length_m * 0.65, "rotation": 90, "cost": 3500, "label": "Storage Cabinet"}
+                    {"id": "desk_1", "type": "desk", "x": width_m * 0.65, "y": length_m * 0.72, "width": 1.3, "depth": 0.65, "height": 0.75, "rotation": 0, "cost": 9200, "label": "Study Table / Workstation"},
+                    {"id": "chair_1", "type": "chair", "x": width_m * 0.65, "y": length_m * 0.52, "width": 0.6, "depth": 0.6, "height": 0.85, "rotation": 180, "cost": 7800, "label": "Ergonomic Office Chair"},
+                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.15, "y": length_m * 0.82, "width": 0.95, "depth": 0.25, "height": 0.35, "rotation": 90, "cost": 28500, "label": "Split Air Conditioner (AC)"},
+                    {"id": "cabinet_2", "type": "cabinet", "x": width_m * 0.15, "y": length_m * 0.45, "width": 1.0, "depth": 0.45, "height": 1.2, "rotation": 90, "cost": 13200, "label": "Bookshelf Storage Cabinet"},
+                    {"id": "chair_2", "type": "chair", "x": width_m * 0.85, "y": length_m * 0.4, "width": 0.6, "depth": 0.6, "height": 0.85, "rotation": 270, "cost": 3200, "label": "Visitor Chair"}
                 ]
-            elif "dining" in room_type.lower():
+            elif clean_type == "dining_room" or "dining" in room_type.lower():
                 detected_furniture = [
-                    {"id": "table_1", "type": "table", "x": width_m * 0.5, "y": length_m * 0.55, "rotation": 0, "cost": 3500, "label": "Dining Table"},
-                    {"id": "chair_1", "type": "chair", "x": width_m * 0.5, "y": length_m * 0.22, "rotation": 0, "cost": 1500, "label": "Dining Chair"},
-                    {"id": "chair_2", "type": "chair", "x": width_m * 0.5, "y": length_m * 0.84, "rotation": 180, "cost": 1500, "label": "Dining Chair"},
-                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.82, "y": length_m * 0.55, "rotation": 90, "cost": 3500, "label": "Sideboard"}
+                    {"id": "table_1", "type": "table", "x": width_m * 0.5, "y": length_m * 0.55, "width": 1.4, "depth": 0.8, "height": 0.75, "rotation": 0, "cost": 18500, "label": "Dining Table"},
+                    {"id": "chair_1", "type": "chair", "x": width_m * 0.28, "y": length_m * 0.55, "width": 0.45, "depth": 0.5, "height": 0.88, "rotation": 90, "cost": 3200, "label": "Dining Chair"},
+                    {"id": "chair_2", "type": "chair", "x": width_m * 0.72, "y": length_m * 0.55, "width": 0.45, "depth": 0.5, "height": 0.88, "rotation": 270, "cost": 3200, "label": "Dining Chair"},
+                    {"id": "chair_3", "type": "chair", "x": width_m * 0.5, "y": length_m * 0.32, "width": 0.45, "depth": 0.5, "height": 0.88, "rotation": 0, "cost": 3200, "label": "Dining Chair"},
+                    {"id": "chair_4", "type": "chair", "x": width_m * 0.5, "y": length_m * 0.78, "width": 0.45, "depth": 0.5, "height": 0.88, "rotation": 180, "cost": 3200, "label": "Dining Chair"},
+                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.88, "y": length_m * 0.28, "width": 1.0, "depth": 0.45, "height": 0.9, "rotation": 90, "cost": 18900, "label": "Sideboard Cabinet"}
                 ]
-            elif "kitchen" in room_type.lower():
+            elif clean_type == "kitchen" or "kitchen" in room_type.lower():
                 detected_furniture = [
-                    {"id": "table_1", "type": "table", "x": width_m * 0.5, "y": length_m * 0.5, "rotation": 0, "cost": 3500, "label": "Kitchen Island"},
-                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.82, "y": length_m * 0.5, "rotation": 90, "cost": 3500, "label": "Storage Cabinet"}
+                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.15, "y": length_m * 0.62, "width": 1.2, "depth": 0.55, "height": 0.9, "rotation": 90, "cost": 6000, "label": "Modular Kitchen Counter"},
+                    {"id": "cabinet_2", "type": "cabinet", "x": width_m * 0.85, "y": length_m * 0.65, "width": 0.65, "depth": 0.55, "height": 2.0, "rotation": 90, "cost": 9000, "label": "Pantry Storage Cabinet"},
+                    {"id": "table_1", "type": "table", "x": width_m * 0.5, "y": length_m * 0.5, "width": 1.0, "depth": 0.6, "height": 0.9, "rotation": 0, "cost": 4500, "label": "Kitchen Prep Island"}
                 ]
-            elif "bathroom" in room_type.lower():
+            elif clean_type == "bathroom" or "bath" in room_type.lower():
                 detected_furniture = [
-                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.75, "y": length_m * 0.55, "rotation": 90, "cost": 3500, "label": "Vanity Cabinet"}
+                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.18, "y": length_m * 0.68, "width": 0.9, "depth": 0.45, "height": 0.85, "rotation": 90, "cost": 6500, "label": "Vanity Counter & Basin"},
+                    {"id": "cabinet_2", "type": "cabinet", "x": width_m * 0.82, "y": length_m * 0.68, "width": 0.7, "depth": 0.35, "height": 0.65, "rotation": 90, "cost": 4200, "label": "Wall Storage Unit"}
                 ]
-            else:  # Living room / studio apartment
+            elif clean_type == "studio_apartment" or "studio" in room_type.lower():
                 detected_furniture = [
-                    {"id": "sofa_1", "type": "sofa", "x": width_m * 0.5, "y": length_m * 0.3, "width": 2.1, "depth": 0.9, "height": 0.85, "rotation": 0, "cost": 14000, "label": "3-Seater Sofa"},
-                    {"id": "table_1", "type": "table", "x": width_m * 0.5, "y": length_m * 0.55, "width": 1.2, "depth": 0.7, "height": 0.45, "rotation": 0, "cost": 3500, "label": "Coffee Table"},
-                    {"id": "tv_1", "type": "tv", "x": width_m * 0.5, "y": length_m * 0.88, "width": 1.2, "depth": 0.15, "height": 0.7, "rotation": 180, "cost": 8000, "label": "55\" TV & Console"},
-                    {"id": "chair_1", "type": "chair", "x": width_m * 0.2, "y": length_m * 0.55, "width": 0.7, "depth": 0.7, "height": 0.8, "rotation": 90, "cost": 2200, "label": "Lounge Chair"}
+                    {"id": "bed_1", "type": "bed", "x": width_m * 0.28, "y": length_m * 0.75, "width": 1.6, "depth": 2.0, "height": 0.8, "rotation": 0, "cost": 22000, "label": "Queen Studio Bed"},
+                    {"id": "wardrobe_1", "type": "wardrobe", "x": width_m * 0.12, "y": length_m * 0.38, "width": 1.2, "depth": 0.6, "height": 2.1, "rotation": 90, "cost": 19800, "label": "Compact Wardrobe"},
+                    {"id": "desk_1", "type": "desk", "x": width_m * 0.78, "y": length_m * 0.75, "width": 1.3, "depth": 0.65, "height": 0.75, "rotation": 0, "cost": 9200, "label": "Study Table & Workstation"},
+                    {"id": "chair_1", "type": "chair", "x": width_m * 0.78, "y": length_m * 0.55, "width": 0.6, "depth": 0.6, "height": 0.85, "rotation": 180, "cost": 7800, "label": "Ergonomic Chair"},
+                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.88, "y": length_m * 0.9, "width": 0.95, "depth": 0.25, "height": 0.35, "rotation": 90, "cost": 28500, "label": "Split Air Conditioner (AC)"},
+                    {"id": "tv_1", "type": "tv", "x": width_m * 0.5, "y": length_m * 0.12, "width": 1.23, "depth": 0.15, "height": 0.71, "rotation": 0, "cost": 14800, "label": "55\" Wall TV & Console"}
+                ]
+            else:  # Living room default
+                detected_furniture = [
+                    {"id": "sofa_1", "type": "sofa", "x": width_m * 0.5, "y": length_m * 0.78, "width": 2.1, "depth": 0.9, "height": 0.85, "rotation": 180, "cost": 14000, "label": "3-Seater Sofa"},
+                    {"id": "table_1", "type": "table", "x": width_m * 0.5, "y": length_m * 0.5, "width": 1.0, "depth": 0.6, "height": 0.45, "rotation": 0, "cost": 3500, "label": "Central Coffee Table"},
+                    {"id": "tv_1", "type": "tv", "x": width_m * 0.5, "y": length_m * 0.12, "width": 1.2, "depth": 0.15, "height": 0.7, "rotation": 0, "cost": 8000, "label": "55\" TV Console"},
+                    {"id": "chair_1", "type": "chair", "x": width_m * 0.22, "y": length_m * 0.5, "width": 0.7, "depth": 0.7, "height": 0.8, "rotation": 90, "cost": 2200, "label": "Accent Lounge Chair"},
+                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.12, "y": length_m * 0.85, "width": 0.95, "depth": 0.25, "height": 0.35, "rotation": 90, "cost": 28500, "label": "Split Air Conditioner (AC)"}
                 ]
 
         for item in detected_furniture:
