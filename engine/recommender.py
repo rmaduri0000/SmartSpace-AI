@@ -65,7 +65,7 @@ ROOM_ITEMS = {
     "master_bedroom": ["bed", "wardrobe", "desk", "chair", "cabinet", "tv"],
     "home_office": ["desk", "chair", "cabinet", "cabinet", "chair"],
     "dining_room": ["table", "chair", "chair", "chair", "chair", "cabinet"],
-    "kitchen": ["cabinet", "cabinet", "table"],
+    "kitchen": ["cabinet", "cabinet", "cabinet", "cabinet", "cabinet", "table"],
     "bathroom": ["cabinet", "cabinet"],
     "studio_apartment": ["bed", "desk", "chair", "wardrobe", "cabinet", "tv"],
 }
@@ -109,6 +109,14 @@ def _select_item(category: str, style: str, mode: str, remaining: float,
             role_candidates = [p for p in products if "book" in p["id"].lower() or "modular-storage" in p["id"].lower() or "tall-display" in p["id"].lower()]
         elif role == "sideboard":
             role_candidates = [p for p in products if "sideboard" in p["id"].lower() or "modular-storage" in p["id"].lower() or "tall-display" in p["id"].lower()]
+        elif role == "kitchen_sink":
+            role_candidates = [p for p in products if "kitchen-sink" in p["id"].lower() or ("sink" in p["id"].lower() and "vanity" not in p["id"].lower())]
+        elif role == "kitchen_drawers":
+            role_candidates = [p for p in products if "drawer" in p["id"].lower() or "spoon" in p["id"].lower() or "cutlery" in p["name"].lower()]
+        elif role == "kitchen_stove":
+            role_candidates = [p for p in products if "hob" in p["id"].lower() or "stove" in p["id"].lower() or "cooking" in p["name"].lower()]
+        elif role == "kitchen_cupboard":
+            role_candidates = [p for p in products if "cupboard" in p["id"].lower() or "overhead" in p["id"].lower() or "essential" in p["name"].lower()]
         elif role == "kitchen_counter":
             role_candidates = [p for p in products if "kitchen-counter" in p["id"].lower()]
         elif role == "kitchen_pantry":
@@ -447,9 +455,17 @@ def recommend_designs(payload: Dict[str, Any], agent: Any = None) -> Dict[str, A
                     role = "sideboard"
             elif room_type == "kitchen":
                 if category == "cabinet" and idx == 0:
-                    role = "kitchen_counter"
+                    role = "kitchen_sink"
                 elif category == "cabinet" and idx == 1:
+                    role = "kitchen_drawers"
+                elif category == "cabinet" and idx == 2:
+                    role = "kitchen_stove"
+                elif category == "cabinet" and idx == 3:
+                    role = "kitchen_cupboard"
+                elif category == "cabinet" and idx == 4:
                     role = "kitchen_pantry"
+                elif category == "cabinet":
+                    role = "kitchen_counter"
                 elif category == "table":
                     role = "kitchen_island"
             elif room_type == "bathroom":

@@ -365,9 +365,12 @@ def _prepare_room(form, image_bytes, photo_uploaded, project_context, user_id, v
                 ]
             elif clean_type == "kitchen" or "kitchen" in room_type.lower():
                 detected_furniture = [
-                    {"id": "cabinet_1", "type": "cabinet", "x": width_m * 0.15, "y": length_m * 0.62, "width": 1.2, "depth": 0.55, "height": 0.9, "rotation": 90, "cost": 6000, "label": "Modular Kitchen Counter"},
-                    {"id": "cabinet_2", "type": "cabinet", "x": width_m * 0.85, "y": length_m * 0.65, "width": 0.65, "depth": 0.55, "height": 2.0, "rotation": 90, "cost": 9000, "label": "Pantry Storage Cabinet"},
-                    {"id": "table_1", "type": "table", "x": width_m * 0.5, "y": length_m * 0.5, "width": 1.0, "depth": 0.6, "height": 0.9, "rotation": 0, "cost": 4500, "label": "Kitchen Prep Island"}
+                    {"id": "sink_1", "type": "cabinet", "x": round(width_m * 0.09, 2), "y": round(length_m * 0.76, 2), "width": 1.2, "depth": 0.6, "height": 0.88, "rotation": 90, "cost": 14500, "label": "Kitchen Sink & Wash Basin Counter"},
+                    {"id": "drawer_1", "type": "cabinet", "x": round(width_m * 0.09, 2), "y": round(length_m * 0.41, 2), "width": 0.9, "depth": 0.6, "height": 0.88, "rotation": 90, "cost": 11800, "label": "Cutlery & Spoon Drawer Unit"},
+                    {"id": "stove_1", "type": "cabinet", "x": round(width_m * 0.76, 2), "y": round(length_m * 0.91, 2), "width": 1.1, "depth": 0.6, "height": 0.88, "rotation": 0, "cost": 16200, "label": "Cooking Stove & Gas Hob Counter"},
+                    {"id": "cupboard_1", "type": "cabinet", "x": round(width_m * 0.43, 2), "y": round(length_m * 0.93, 2), "width": 1.2, "depth": 0.38, "height": 0.75, "rotation": 0, "cost": 9500, "label": "Daily Essentials Wall Cupboard"},
+                    {"id": "pantry_1", "type": "cabinet", "x": round(width_m * 0.91, 2), "y": round(length_m * 0.42, 2), "width": 0.7, "depth": 0.6, "height": 2.1, "rotation": 270, "cost": 18500, "label": "Pantry Storage Cabinet"},
+                    {"id": "island_1", "type": "table", "x": round(width_m * 0.5, 2), "y": round(length_m * 0.5, 2), "width": 1.2, "depth": 0.65, "height": 0.9, "rotation": 0, "cost": 12500, "label": "Kitchen Prep Island"}
                 ]
             elif clean_type == "bathroom" or "bath" in room_type.lower():
                 detected_furniture = [

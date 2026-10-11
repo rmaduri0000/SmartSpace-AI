@@ -196,13 +196,16 @@ SAMPLE_ROOMS = {
         "name": "Modern Kitchen",
         "room_type": "kitchen",
         "dimensions": {"width": 4.2, "length": 3.8, "height": 2.8},
-        "budget": 60000,
+        "budget": 95000,
         "door": {"wall": "south", "offset": 0.25, "width": 0.9},
         "windows": [{"wall": "north", "offset": 1.3, "width": 1.4}],
         "initial_furniture": [
-            {"id": "cabinet_1", "type": "cabinet", "x": 0.45, "y": 2.0, "rotation": 90, "label": "Modular Kitchen Counter"},
-            {"id": "cabinet_2", "type": "cabinet", "x": 3.75, "y": 2.0, "rotation": 270, "label": "Pantry Storage Cabinet"},
-            {"id": "table_1", "type": "table", "x": 2.1, "y": 3.2, "rotation": 0, "label": "Kitchen Prep Island"}
+            {"id": "sink_1", "type": "cabinet", "x": 0.35, "y": 2.9, "rotation": 90, "label": "Kitchen Sink & Wash Basin Counter"},
+            {"id": "drawer_1", "type": "cabinet", "x": 0.35, "y": 1.55, "rotation": 90, "label": "Cutlery & Spoon Drawer Unit"},
+            {"id": "stove_1", "type": "cabinet", "x": 3.2, "y": 3.45, "rotation": 0, "label": "Cooking Stove & Gas Hob Counter"},
+            {"id": "cupboard_1", "type": "cabinet", "x": 1.8, "y": 3.55, "rotation": 0, "label": "Daily Essentials Wall Cupboard"},
+            {"id": "pantry_1", "type": "cabinet", "x": 3.85, "y": 1.6, "rotation": 270, "label": "Pantry Storage Cabinet"},
+            {"id": "table_1", "type": "table", "x": 2.1, "y": 1.9, "rotation": 0, "label": "Kitchen Prep Island"}
         ]
     },
     "bathroom": {
