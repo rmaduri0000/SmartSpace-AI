@@ -17,6 +17,7 @@ SmartSpace AI is an interior layout planning application with a four-step projec
 - **Optional YOLO photo analysis** — Detect supported objects from an uploaded photo, with a room-type starter layout when photo inference is unavailable.
 - **Accounts and project history** — Register, sign in, save designs, and resume them in the studio.
 - **Live feedback** — View estimated furniture cost, layout metrics, circulation paths, clearance outlines, and facing arrows.
+- **Architectural interior design specifications** — Complete guidelines for all 8 room types (Living Room, Bedroom, Master Bedroom, Kitchen, Bathroom, Dining Room, Home Office, Studio Apartment) with 3-tier lighting, materials, 60-30-10 palettes, and AI visualization prompts. See [Interior Design Specifications](docs/INTERIOR_DESIGN_SPECIFICATIONS.md).
 
 ## Project workflow
 
